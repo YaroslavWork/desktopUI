@@ -1,0 +1,5 @@
+/* Transparent background for the bar */
+window {
+  background-color: transparent;
+  background: transparent;
+}

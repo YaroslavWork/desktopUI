@@ -5,21 +5,21 @@ import sys
 from pathlib import Path
 
 # Ensure project root is in path
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+PROJECT_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # Initialize services (side effect on import)
 from services.user_service import user_service  # noqa: F401
 
 from fabric import Application
 from fabric.widgets.centerbox import CenterBox
-from fabric.widgets.datetime import DateTime
 from fabric.widgets.wayland import WaylandWindow
 
 from widgets.user.config import UserBarContent
 
 
 class MainBar(WaylandWindow):
-    """Combined status bar: user info (left) + clock (right)."""
+    """Bar taking full top width with user info on left, transparent elsewhere."""
 
     def __init__(self, **kwargs):
         super().__init__(
@@ -28,12 +28,10 @@ class MainBar(WaylandWindow):
             exclusivity="auto",
             **kwargs,
         )
-        self.children = CenterBox(
-            start_children=UserBarContent(),
-            end_children=DateTime(),
-        )
+        self.children = CenterBox(start_children=UserBarContent())
 
 
 if __name__ == "__main__":
     app = Application("desktop-ui", MainBar())
+    app.set_stylesheet_from_file(str(PROJECT_ROOT / "style.css"))
     app.run()
