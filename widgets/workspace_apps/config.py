@@ -22,6 +22,13 @@ def _get_app_display(app: WorkspaceApp) -> tuple[str | None, str]:
     return (icon_name, (app.app_class or "?")[0].upper())
 
 
+# Events that should trigger workspace apps refresh
+WORKSPACE_REFRESH_EVENTS = (
+    "workspace", "workspacev2", "openwindow", "closewindow",
+    "movewindow", "movewindowv2", "activewindow", "activewindowv2",
+)
+
+
 class WorkspaceAppsWidget(Box):
     """Shows open apps in current workspace as icon or first letter buttons."""
 
@@ -32,12 +39,27 @@ class WorkspaceAppsWidget(Box):
             style_classes=["workspace-apps-widget"],
             **kwargs,
         )
-        self._buttons: list[Button] = []
+        self._buttons: list[tuple[WorkspaceApp, Button]] = []
+        self._connect_hyprland_events()
         self._update()
-        invoke_repeater(2000, self._update)  # Poll every 2 seconds
+
+    def _connect_hyprland_events(self):
+        """Connect to Hyprland events for workspace/window changes."""
+        try:
+            from fabric.hyprland import Hyprland
+
+            self._hyprland = Hyprland(commands_only=False)
+            for evt in WORKSPACE_REFRESH_EVENTS:
+                self._hyprland.connect(f"event::{evt}", self._on_hyprland_event)
+        except Exception:
+            self._hyprland = None
+            invoke_repeater(2000, self._update)  # Fallback: poll when Hyprland unavailable
+
+    def _on_hyprland_event(self, _event):
+        self._update()
 
     def _clear_buttons(self):
-        for btn in self._buttons:
+        for _app, btn in self._buttons:
             self.remove(btn)
         self._buttons.clear()
 
@@ -87,13 +109,25 @@ class WorkspaceAppsWidget(Box):
         apps = workspace_apps_service.get_apps()
         current = [(a.address, a.app_class) for a in apps]
         if hasattr(self, "_last_apps") and self._last_apps == current:
+            self._update_active_glow()
             return True
         self._last_apps = current
 
         self._clear_buttons()
         for app in apps:
             btn = self._create_app_button(app)
-            self._buttons.append(btn)
+            self._buttons.append((app, btn))
             self.add(btn)
         self.show_all()
+        self._update_active_glow()
         return True
+
+    def _update_active_glow(self):
+        """Add glow to the active/focused window's button."""
+        active_addr = workspace_apps_service.get_active_window_address()
+        for app, btn in self._buttons:
+            ctx = btn.get_style_context()
+            if app.address == active_addr:
+                ctx.add_class("active")
+            else:
+                ctx.remove_class("active")

@@ -59,5 +59,22 @@ class WorkspaceAppsService(Service):
         except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
             return []
 
+    def get_active_window_address(self) -> str | None:
+        """Return address of the currently focused window."""
+        try:
+            result = subprocess.run(
+                ["hyprctl", "-j", "activewindow"],
+                capture_output=True,
+                text=True,
+                timeout=1,
+            )
+            if result.returncode != 0:
+                return None
+            data = json.loads(result.stdout)
+            addr = data.get("address")
+            return str(addr) if addr is not None else None
+        except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
+            return None
+
 
 workspace_apps_service = WorkspaceAppsService()

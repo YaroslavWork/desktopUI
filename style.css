@@ -30,6 +30,10 @@ window {
   min-width: 28px;
   min-height: 28px;
 }
+.workspace-app-button.active {
+  box-shadow: 0 0 8px 2px var(--primary);
+  background-color: alpha(var(--primary), 0.2);
+}
 
 /* Time widget - cycles on click */
 .time-widget {
