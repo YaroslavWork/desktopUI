@@ -115,3 +115,10 @@ window {
   color: var(--on-primary);
   border-color: var(--primary);
 }
+/* Occupied workspace (has open apps) - subtle border */
+.workspace-button.occupied {
+  border-color: var(--outline);
+}
+.workspace-button.occupied.active {
+  border-color: var(--primary);
+}

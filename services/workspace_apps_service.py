@@ -59,6 +59,35 @@ class WorkspaceAppsService(Service):
         except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
             return []
 
+    def get_workspace_ids_with_apps(self) -> set[int]:
+        """Return set of workspace IDs (1-9) that have at least one mapped window."""
+        try:
+            clients = subprocess.run(
+                ["hyprctl", "-j", "clients"],
+                capture_output=True,
+                text=True,
+                timeout=1,
+            )
+            if clients.returncode != 0:
+                return set()
+            clients_data = json.loads(clients.stdout)
+            ids = set()
+            for c in clients_data:
+                if not c.get("mapped", True):
+                    continue
+                ws = c.get("workspace")
+                if isinstance(ws, dict):
+                    wid = ws.get("id")
+                elif isinstance(ws, int):
+                    wid = ws
+                else:
+                    continue
+                if wid is not None and 1 <= int(wid) <= 9:
+                    ids.add(int(wid))
+            return ids
+        except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
+            return set()
+
     def get_active_window_address(self) -> str | None:
         """Return address of the currently focused window."""
         try:
