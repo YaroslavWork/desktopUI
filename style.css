@@ -12,6 +12,25 @@ window {
   border-radius: 24px;
 }
 
+/* Workspace apps - icons or first letters */
+.workspace-apps-widget,
+.workspace-app-button,
+.workspace-app-letter {
+  color: var(--primary);
+  padding: 0;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+  outline: none;
+  font-size: 12px;
+  font-weight: bold;
+}
+.workspace-app-button {
+  border-radius: 50%;
+  min-width: 28px;
+  min-height: 28px;
+}
+
 /* Time widget - cycles on click */
 .time-widget {
   color: var(--primary);
