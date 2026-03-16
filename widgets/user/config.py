@@ -23,12 +23,19 @@ class UserBarContent(Box):
     """Reusable user info widget: Welcome message + session time."""
 
     def __init__(self, **kwargs):
-        self._welcome_label = Label(label=f"Welcome, {user_service.username}.")
-        self._session_label = Label(label="Current session: 00:00:00")
+        self._welcome_label = Label(
+            label=f"Welcome, {user_service.username}.",
+            style_classes=["user-welcome"],
+        )
+        self._session_label = Label(
+            label="Current session: 00:00:00",
+            style_classes=["user-session"],
+        )
         super().__init__(
             orientation="vertical",
             spacing=4,
             children=[self._welcome_label, self._session_label],
+            style_classes=["user-widget"],
             **kwargs,
         )
         self._update_session()

@@ -1,0 +1,39 @@
+:root {
+  /* Main UI Surface and Background */
+  --background: #1a120d;
+  --on-background: #f0dfd7;
+  --surface: #1a120d;
+  --on-surface: #f0dfd7;
+  --surface-variant: #52443c;
+  --on-surface-variant: #d7c2b8;
+
+  /* Primary (Main Accents) */
+  --primary: #ffb68c;
+  --on-primary: #532200;
+  --primary-container: #6f3812;
+  --on-primary-container: #ffdbc9;
+
+  /* Secondary (Less Prominent Accents) */
+  --secondary: #e5bfaa;
+  --on-secondary: #432b1d;
+  --secondary-container: #5c4131;
+  --on-secondary-container: #ffdbc9;
+
+  /* Tertiary (Contrasting Accents) */
+  --tertiary: #ccc991;
+  --on-tertiary: #333208;
+  --tertiary-container: #4a481d;
+  --on-tertiary-container: #e9e5ab;
+
+  /* Error States */
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+
+  /* Utilities */
+  --outline: #9f8d84;
+  --outline-variant: #52443c;
+  --shadow: #000000;
+  --scrim: #000000;
+}

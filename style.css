@@ -1,5 +1,57 @@
+@import url("colors.css");
+
 /* Transparent background for the bar */
 window {
   background-color: transparent;
   background: transparent;
+}
+
+/* Top bar: 48px height, rounded corners */
+.top-bar {
+  min-height: 48px;
+  border-radius: 24px;
+}
+
+/* User letter button - invisible background, primary accent border and letter */
+.user-letter-button,
+.user-letter-button:hover,
+.user-letter-button:active,
+.user-letter-button:focus {
+  border-radius: 50%;
+  padding: 0;
+  min-width: 40px;
+  min-height: 40px;
+  background-color: rgba(0, 0, 0, 0);
+  background-image: none;
+  border-image: none;
+  border: 2px solid var(--primary);
+  outline: none;
+  outline-width: 0;
+  box-shadow: none;
+  color: var(--primary);
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* User popup overlay - surface background */
+.user-popup {
+  background-color: var(--background);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* User widget - primary color text */
+.user-widget {
+  color: var(--primary);
+}
+.user-widget label {
+  color: var(--primary);
+}
+.user-welcome {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary);
+}
+.user-session {
+  color: var(--primary);
 }
