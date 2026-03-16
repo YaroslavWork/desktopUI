@@ -91,3 +91,27 @@ window {
 .user-session {
   color: var(--primary);
 }
+
+/* Workspace buttons - circles, initials inside */
+.workspace-button,
+.workspace-button:hover,
+.workspace-button:active,
+.workspace-button:focus {
+  border-radius: 50%;
+  padding: 0;
+  min-width: 32px;
+  min-height: 32px;
+  background-color: var(--surface-variant);
+  background-image: none;
+  border: 2px solid transparent;
+  outline: none;
+  box-shadow: none;
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: bold;
+}
+.workspace-button.active {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}

@@ -19,6 +19,7 @@ from services.workspace_apps_service import workspace_apps_service  # noqa: F401
 from widgets.user.config import UserBarContent
 from widgets.time.config import TimeWidget
 from widgets.workspace_apps.config import WorkspaceAppsWidget
+from widgets.workspaces.config import WorkspacesWidget
 
 
 # User widget with fixed width (for popup)
@@ -68,10 +69,11 @@ class UserModuleBar(WaylandWindow):
         user_button.connect("clicked", self._on_galaxy_clicked)
 
         time_widget = TimeWidget()
+        workspaces_widget = WorkspacesWidget()
         workspace_apps_widget = WorkspaceAppsWidget()
 
         self.children = CenterBox(
-            start_children=[user_button, time_widget, workspace_apps_widget],
+            start_children=[user_button, workspaces_widget, time_widget, workspace_apps_widget],
             spacing=12,
         )
 

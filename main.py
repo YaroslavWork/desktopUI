@@ -11,6 +11,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Initialize services (side effect on import)
 from services.user_service import user_service  # noqa: F401
+from services.workspaces_service import workspaces_service  # noqa: F401
 
 from fabric import Application
 from fabric.utils.helpers import compile_css
