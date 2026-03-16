@@ -16,6 +16,7 @@ from fabric.widgets.wayland import WaylandWindow
 
 from services.user_service import user_service  # noqa: F401
 from widgets.user.config import UserBarContent
+from widgets.time.config import TimeWidget
 
 
 # User widget with fixed width (for popup)
@@ -63,7 +64,9 @@ class UserModuleBar(WaylandWindow):
         )
         user_button.set_relief(Gtk.ReliefStyle.NONE)
         user_button.connect("clicked", self._on_galaxy_clicked)
-        self.children = CenterBox(start_children=user_button)
+
+        time_widget = TimeWidget()
+        self.children = CenterBox(start_children=[user_button, time_widget], spacing=8)
 
     def _on_galaxy_clicked(self, _button):
         app = self.get_application()

@@ -12,6 +12,17 @@ window {
   border-radius: 24px;
 }
 
+/* Time widget - cycles on click */
+.time-widget {
+  color: var(--primary);
+  padding: 0 8px;
+  font-size: 14px;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+  outline: none;
+}
+
 /* User letter button - invisible background, primary accent border and letter */
 .user-letter-button,
 .user-letter-button:hover,
