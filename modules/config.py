@@ -52,7 +52,7 @@ class UserModuleBar(WaylandWindow):
         super().__init__(
             layer="top",
             anchor="left top right",
-            margin="4px 0 4px 0",
+            margin="12px 12px 12px 12px",
             exclusivity="auto",
             style_classes=["top-bar"],
             **kwargs,
@@ -69,9 +69,10 @@ class UserModuleBar(WaylandWindow):
 
         time_widget = TimeWidget()
         workspace_apps_widget = WorkspaceAppsWidget()
+
         self.children = CenterBox(
             start_children=[user_button, time_widget, workspace_apps_widget],
-            spacing=8,
+            spacing=12,
         )
 
     def _on_galaxy_clicked(self, _button):

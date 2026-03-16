@@ -1,15 +1,17 @@
 @import url("colors.css");
 
-/* Transparent background for the bar */
+/* Transparent background for windows except bar */
 window {
   background-color: transparent;
   background: transparent;
 }
 
-/* Top bar: 48px height, rounded corners */
+/* Top bar: dark background, rounded, equal padding */
 .top-bar {
   min-height: 48px;
   border-radius: 24px;
+  background-color: var(--background);
+  padding: 12px 16px;
 }
 
 /* Workspace apps - icons or first letters */
