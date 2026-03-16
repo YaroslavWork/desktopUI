@@ -71,7 +71,7 @@ class WorkspacesWidget(Box):
                 ctx.remove_class("occupied")
 
     def _build_buttons(self):
-        """Create rounded buttons with initials."""
+        """Create rounded buttons with initials (always visible)."""
         for ws_id, label in enumerate(WORKSPACE_INITIALS, start=1):
             btn = Button(
                 label=label,

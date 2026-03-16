@@ -10,6 +10,7 @@ from fabric.widgets.window import Window
 from fabric.utils.helpers import invoke_repeater
 
 from services.user_service import user_service
+from utils.assets import user_icon
 
 
 def _format_session(seconds: int) -> str:
@@ -31,10 +32,21 @@ class UserBarContent(Box):
             label="Current session: 00:00:00",
             style_classes=["user-session"],
         )
+        user_img = user_icon(32)
+        if user_img is not None:
+            header = Box(
+                orientation="horizontal",
+                spacing=12,
+                children=[user_img, self._welcome_label],
+                style_classes=["user-widget-header"],
+            )
+            children = [header, self._session_label]
+        else:
+            children = [self._welcome_label, self._session_label]
         super().__init__(
             orientation="vertical",
-            spacing=4,
-            children=[self._welcome_label, self._session_label],
+            spacing=8,
+            children=children,
             style_classes=["user-widget"],
             **kwargs,
         )

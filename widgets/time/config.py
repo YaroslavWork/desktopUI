@@ -9,8 +9,12 @@ gi = __import__("gi")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 
+from fabric.widgets.box import Box
 from fabric.widgets.button import Button
+from fabric.widgets.label import Label
 from fabric.utils.helpers import invoke_repeater
+
+from utils.assets import clock_icon
 
 
 class TimeWidget(Button):
@@ -23,8 +27,19 @@ class TimeWidget(Button):
     )
 
     def __init__(self, **kwargs):
+        self._time_label = Label(label="", style_classes=["time-widget-label"])
+        clock_img = clock_icon(18)
+        if clock_img is not None:
+            content = Box(
+                orientation="horizontal",
+                spacing=6,
+                children=[clock_img, self._time_label],
+                style_classes=["time-widget-content"],
+            )
+        else:
+            content = self._time_label
         super().__init__(
-            label="",
+            child=content,
             style_classes=["time-widget", "flat"],
             v_align="center",
             **kwargs,
@@ -38,7 +53,7 @@ class TimeWidget(Button):
         self._update()
 
     def _update(self) -> bool:
-        self.set_label(time.strftime(self.FORMATS[self._current_index]))
+        self._time_label.set_label(time.strftime(self.FORMATS[self._current_index]))
         return True
 
     def _cycle_next(self):

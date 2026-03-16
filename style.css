@@ -14,6 +14,13 @@ window {
   padding: 12px 16px;
 }
 
+/* Vertical separator between bar sections */
+.bar-separator {
+  min-width: 1px;
+  background-color: var(--outline);
+  margin: 4px 0;
+}
+
 /* Workspace apps - icons or first letters */
 .workspace-apps-widget,
 .workspace-app-button,
@@ -37,8 +44,10 @@ window {
   border: 2px solid var(--primary);
 }
 
-/* Time widget - cycles on click */
-.time-widget {
+/* Time widget - cycles on click, clock icon + time */
+.time-widget,
+.time-widget-content,
+.time-widget-label {
   color: var(--primary);
   padding: 0 8px;
   font-size: 14px;
@@ -77,7 +86,8 @@ window {
 }
 
 /* User widget - primary color text */
-.user-widget {
+.user-widget,
+.user-widget-header {
   color: var(--primary);
 }
 .user-widget label {

@@ -72,8 +72,12 @@ class UserModuleBar(WaylandWindow):
         workspaces_widget = WorkspacesWidget()
         workspace_apps_widget = WorkspaceAppsWidget()
 
+        sep = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        sep.set_opacity(0.4)
+        sep.get_style_context().add_class("bar-separator")
+
         self.children = CenterBox(
-            start_children=[user_button, workspaces_widget, time_widget, workspace_apps_widget],
+            start_children=[user_button, sep, workspaces_widget, time_widget, workspace_apps_widget],
             spacing=12,
         )
 

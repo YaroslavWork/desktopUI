@@ -14,6 +14,7 @@ from fabric.widgets.button import Button
 from fabric.utils.helpers import invoke_repeater
 
 from services.workspace_apps_service import workspace_apps_service, WorkspaceApp
+from utils.assets import window_icon
 
 
 def _get_app_display(app: WorkspaceApp) -> tuple[str | None, str]:
@@ -76,19 +77,37 @@ class WorkspaceAppsWidget(Box):
                     v_align="center",
                 )
             else:
+                fallback_img = window_icon(20)
+                if fallback_img is not None:
+                    btn = Button(
+                        child=fallback_img,
+                        style_classes=["workspace-app-button", "flat"],
+                        size=(28, 28),
+                        v_align="center",
+                    )
+                else:
+                    btn = Button(
+                        label=letter,
+                        style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
+                        size=(28, 28),
+                        v_align="center",
+                    )
+        except Exception:
+            fallback_img = window_icon(20)
+            if fallback_img is not None:
+                btn = Button(
+                    child=fallback_img,
+                    style_classes=["workspace-app-button", "flat"],
+                    size=(28, 28),
+                    v_align="center",
+                )
+            else:
                 btn = Button(
                     label=letter,
                     style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
                     size=(28, 28),
                     v_align="center",
                 )
-        except Exception:
-            btn = Button(
-                label=letter,
-                style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
-                size=(28, 28),
-                v_align="center",
-            )
         btn.set_relief(Gtk.ReliefStyle.NONE)
         btn.set_tooltip_text(app.title or app.app_class)
         btn.connect("clicked", self._on_app_clicked, app)
