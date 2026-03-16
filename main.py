@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Main entry point: runs all widgets and services together."""
 
+import re
 import sys
 from pathlib import Path
 
@@ -12,30 +13,20 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from services.user_service import user_service  # noqa: F401
 
 from fabric import Application
-from fabric.widgets.centerbox import CenterBox
-from fabric.widgets.wayland import WaylandWindow
+from fabric.utils.helpers import compile_css
 
-from widgets.user.config import UserBarContent
-
-
-class MainBar(WaylandWindow):
-    """Bar taking full top width with user info on left, transparent elsewhere."""
-
-    def __init__(self, **kwargs):
-        super().__init__(
-            layer="top",
-            anchor="left top right",
-            exclusivity="auto",
-            **kwargs,
-        )
-        self.children = CenterBox(start_children=UserBarContent())
+from modules.config import UserModuleBar, UserPopup
 
 
 if __name__ == "__main__":
-    import re
-    from fabric.utils.helpers import compile_css
+    bar = UserModuleBar()
+    popup = UserPopup()
+    popup.hide()
 
-    app = Application("desktop-ui", MainBar())
+    app = Application("desktop-ui", bar)
+    app.add_window(popup)
+    app._user_popup = popup
+
     css = (PROJECT_ROOT / "style.css").read_text()
     compiled = compile_css(css, base_path=str(PROJECT_ROOT))
     compiled = re.sub(r":root\s*\{([^}]*)\}", lambda m: m.group(1).strip(), compiled, flags=re.DOTALL)
