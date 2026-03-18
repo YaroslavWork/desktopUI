@@ -89,7 +89,7 @@ class UserModuleBar(WaylandWindow):
         user_button.set_relief(Gtk.ReliefStyle.NONE)
         user_button.connect("clicked", self._on_galaxy_clicked)
 
-        time_widget = TimeWidget()
+        time_widget = TimeWidget(size=(100, -1))
         workspaces_widget = WorkspacesWidget()
         workspace_apps_widget = WorkspaceAppsWidget()
 

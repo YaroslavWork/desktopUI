@@ -45,6 +45,8 @@ class TimeWidget(Button):
             **kwargs,
         )
         self.set_relief(Gtk.ReliefStyle.NONE)
+        content.set_halign(Gtk.Align.CENTER)
+        content.set_hexpand(False)
         self.add_events(Gdk.EventMask.SCROLL_MASK)
         self._current_index = 0
         self._repeater_id = invoke_repeater(1000, self._update)

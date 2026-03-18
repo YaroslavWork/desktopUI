@@ -13,12 +13,12 @@ window {
   background-color: transparent;
 }
 
-/* Bar sections: blurry, 15% white tint (semi-transparent for compositor blur) */
+/* Bar sections: solid background */
 .bar-section {
   min-height: 36px;
   padding: 4px 14px;
   border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--background);
   background-image: none;
   border-image: none;
 }
@@ -41,9 +41,6 @@ window {
 .bar-section .user-letter-button:hover,
 .bar-section .user-letter-button:active,
 .bar-section .user-letter-button:focus,
-.bar-section .time-widget,
-.bar-section .time-widget-content,
-.bar-section .time-widget-label,
 .bar-section .workspace-apps-widget,
 .bar-section .workspace-app-button,
 .bar-section .workspace-app-letter,
@@ -105,12 +102,23 @@ window {
 }
 
 /* Time widget - cycles on click, clock icon + time */
-.time-widget,
+.time-widget {
+  color: var(--background);
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 80px;
+  background-color: var(--primary);
+  background-image: none;
+  border: none;
+  border-image: none;
+  outline: none;
+}
 .time-widget-content,
 .time-widget-label {
-  color: var(--primary);
-  padding: 0 8px;
-  font-size: 14px;
+  color: var(--background);
+  font-size: 15px;
+  font-weight: bold;
   background-color: transparent;
   background-image: none;
   border-image: none;
