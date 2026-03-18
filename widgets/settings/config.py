@@ -75,7 +75,7 @@ class SettingsBarContent(Box):
         )
 
     def _on_logout(self, _btn) -> None:
-        _run(["loginctl", "terminate-user", str(os.getuid())])
+        _run(["hyprctl", "dispatch", "exit"])
 
     def _on_block(self, _btn) -> None:
         _run(["hyprlock"])

@@ -6,19 +6,79 @@ window {
   background: transparent;
 }
 
-/* Top bar: dark background, rounded, equal padding */
+/* Top bar: container for three sections, transparent */
 .top-bar {
-  min-height: 48px;
-  border-radius: 24px;
-  background-color: var(--background);
-  padding: 12px 16px;
+  min-height: 36px;
+  padding: 0;
+  background-color: transparent;
 }
 
-/* Vertical separator between bar sections */
-.bar-separator {
-  min-width: 1px;
-  background-color: var(--outline);
-  margin: 4px 0;
+/* Bar sections: blurry, 15% white tint (semi-transparent for compositor blur) */
+.bar-section {
+  min-height: 36px;
+  padding: 4px 14px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.15);
+  background-image: none;
+  border-image: none;
+}
+
+.bar-section-left {
+  padding-left: 16px;
+}
+
+.bar-section-center {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+.bar-section-right {
+  padding-right: 16px;
+}
+
+/* Content inside bar sections: primary accent colors */
+.bar-section .user-letter-button,
+.bar-section .user-letter-button:hover,
+.bar-section .user-letter-button:active,
+.bar-section .user-letter-button:focus,
+.bar-section .time-widget,
+.bar-section .time-widget-content,
+.bar-section .time-widget-label,
+.bar-section .workspace-apps-widget,
+.bar-section .workspace-app-button,
+.bar-section .workspace-app-letter,
+.bar-section .settings-bar-button,
+.bar-section .settings-bar-button:hover,
+.bar-section .settings-bar-button:active,
+.bar-section .settings-bar-button:focus {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.bar-section .workspace-app-button.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 10px 2px var(--primary);
+}
+
+.bar-section .workspace-button,
+.bar-section .workspace-button:hover,
+.bar-section .workspace-button:active,
+.bar-section .workspace-button:focus {
+  background-color: var(--surface-variant);
+  color: var(--on-surface-variant);
+}
+
+.bar-section .workspace-button.active {
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.bar-section .workspace-button.occupied {
+  border-color: var(--outline);
+}
+
+.bar-section .workspace-button.occupied.active {
+  border-color: var(--primary);
 }
 
 /* Workspace apps - icons or first letters */

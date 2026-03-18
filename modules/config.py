@@ -93,10 +93,6 @@ class UserModuleBar(WaylandWindow):
         workspaces_widget = WorkspacesWidget()
         workspace_apps_widget = WorkspaceAppsWidget()
 
-        sep = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-        sep.set_opacity(0.4)
-        sep.get_style_context().add_class("bar-separator")
-
         settings_img = settings_icon(22)
         settings_button = Button(
             style_classes=["settings-bar-button", "flat"],
@@ -111,10 +107,34 @@ class UserModuleBar(WaylandWindow):
             settings_button.set_label("⚙")
         settings_button.connect("clicked", self._on_settings_clicked)
 
-        self.children = CenterBox(
-            start_children=[user_button, sep, workspaces_widget, time_widget, workspace_apps_widget],
-            end_children=[settings_button],
+        # Left bar: user, time, active apps
+        left_bar = Box(
+            orientation="horizontal",
             spacing=12,
+            style_classes=["bar-section", "bar-section-left"],
+            children=[user_button, time_widget, workspace_apps_widget],
+        )
+        # Center bar: workspaces
+        center_bar = Box(
+            orientation="horizontal",
+            spacing=8,
+            style_classes=["bar-section", "bar-section-center"],
+            children=[workspaces_widget],
+        )
+        # Right bar: settings
+        right_bar = Box(
+            orientation="horizontal",
+            spacing=0,
+            style_classes=["bar-section", "bar-section-right"],
+            children=[settings_button],
+        )
+
+        self.children = CenterBox(
+            start_children=[left_bar],
+            center_children=[center_bar],
+            end_children=[right_bar],
+            spacing=8,
+            style_classes=["top-bar"],
         )
 
     def _on_settings_clicked(self, _button):
