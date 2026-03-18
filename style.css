@@ -132,3 +132,35 @@ window {
 .workspace-button.occupied.active {
   border-color: var(--primary);
 }
+
+/* Settings bar button - gear icon, same style as user button */
+.settings-bar-button,
+.settings-bar-button:hover,
+.settings-bar-button:active,
+.settings-bar-button:focus {
+  border-radius: 50%;
+  padding: 0;
+  min-width: 40px;
+  min-height: 40px;
+  background-color: rgba(0, 0, 0, 0);
+  background-image: none;
+  border-image: none;
+  border: 2px solid var(--primary);
+  outline: none;
+  box-shadow: none;
+  color: var(--primary);
+}
+
+/* Settings popup action buttons */
+.settings-action-button,
+.settings-action-button:hover,
+.settings-action-button:active {
+  border-radius: 8px;
+  padding: 8px 12px;
+  background-color: transparent;
+  color: var(--primary);
+  font-size: 13px;
+}
+.settings-action-button:hover {
+  background-color: var(--surface-variant);
+}

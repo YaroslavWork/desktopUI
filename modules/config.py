@@ -20,11 +20,16 @@ from widgets.user.config import UserBarContent
 from widgets.time.config import TimeWidget
 from widgets.workspace_apps.config import WorkspaceAppsWidget
 from widgets.workspaces.config import WorkspacesWidget
+from widgets.settings.config import SettingsBarContent
+from utils.assets import settings_icon
 
 
 # User widget with fixed width (for popup)
 USER_WIDGET_WIDTH = 220
 user_widget = UserBarContent(size=(USER_WIDGET_WIDTH, -1))
+
+# Settings widget for popup
+settings_widget = SettingsBarContent(size=(140, -1))
 
 # Popup: user widget overlay below the bar
 USER_POPUP_MARGIN_TOP = 4  # Below bar
@@ -43,6 +48,22 @@ class UserPopup(WaylandWindow):
             **kwargs,
         )
         self.children = Box(children=[user_widget])
+        self.hide()
+
+
+class SettingsPopup(WaylandWindow):
+    """Settings widget overlay in top-right corner, below the bar."""
+
+    def __init__(self, **kwargs):
+        super().__init__(
+            layer="overlay",
+            anchor="right top",
+            margin=f"{USER_POPUP_MARGIN_TOP}px 4px 0 0",
+            exclusivity="none",
+            style_classes=["user-popup", "settings-popup"],
+            **kwargs,
+        )
+        self.children = Box(children=[settings_widget])
         self.hide()
 
 
@@ -76,10 +97,34 @@ class UserModuleBar(WaylandWindow):
         sep.set_opacity(0.4)
         sep.get_style_context().add_class("bar-separator")
 
+        settings_img = settings_icon(22)
+        settings_button = Button(
+            style_classes=["settings-bar-button", "flat"],
+            size=(40, 40),
+            v_align="center",
+        )
+        settings_button.set_relief(Gtk.ReliefStyle.NONE)
+        if settings_img:
+            settings_button.set_image(settings_img)
+            settings_button.set_always_show_image(True)
+        else:
+            settings_button.set_label("⚙")
+        settings_button.connect("clicked", self._on_settings_clicked)
+
         self.children = CenterBox(
             start_children=[user_button, sep, workspaces_widget, time_widget, workspace_apps_widget],
+            end_children=[settings_button],
             spacing=12,
         )
+
+    def _on_settings_clicked(self, _button):
+        app = self.get_application()
+        if app and hasattr(app, "_settings_popup"):
+            popup = app._settings_popup
+            if popup.get_visible():
+                popup.hide()
+            else:
+                popup.show_all()
 
     def _on_galaxy_clicked(self, _button):
         app = self.get_application()

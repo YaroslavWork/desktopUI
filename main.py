@@ -16,17 +16,21 @@ from services.workspaces_service import workspaces_service  # noqa: F401
 from fabric import Application
 from fabric.utils.helpers import compile_css
 
-from modules.config import UserModuleBar, UserPopup
+from modules.config import UserModuleBar, UserPopup, SettingsPopup
 
 
 if __name__ == "__main__":
     bar = UserModuleBar()
-    popup = UserPopup()
-    popup.hide()
+    user_popup = UserPopup()
+    user_popup.hide()
+    settings_popup = SettingsPopup()
+    settings_popup.hide()
 
     app = Application("desktop-ui", bar)
-    app.add_window(popup)
-    app._user_popup = popup
+    app.add_window(user_popup)
+    app.add_window(settings_popup)
+    app._user_popup = user_popup
+    app._settings_popup = settings_popup
 
     css = (PROJECT_ROOT / "style.css").read_text()
     compiled = compile_css(css, base_path=str(PROJECT_ROOT))

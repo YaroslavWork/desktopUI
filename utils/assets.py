@@ -64,6 +64,10 @@ WORKSPACE_ICONS = [
 ICON_CLOCK = "Time/Clock Circle.svg"
 ICON_USER = "Users/User.svg"
 ICON_WINDOW = "Network, IT, Programming/Window Frame.svg"
+ICON_SETTINGS = "Settings, Fine Tuning/Settings.svg"
+ICON_LOGOUT = "Arrows Action/Logout.svg"
+ICON_LOCK = "Security/Lock Keyhole Minimalistic.svg"
+ICON_POWER = "Essentional, UI/Power.svg"
 
 
 def clock_icon(size: int = 24) -> Gtk.Image | None:
@@ -83,3 +87,19 @@ def workspace_icon(index: int, size: int = 24) -> Gtk.Image | None:
     if 0 <= index < len(WORKSPACE_ICONS):
         return load_icon(WORKSPACE_ICONS[index], size)
     return None
+
+
+def settings_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_SETTINGS, size)
+
+
+def logout_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_LOGOUT, size)
+
+
+def lock_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_LOCK, size)
+
+
+def power_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_POWER, size)
