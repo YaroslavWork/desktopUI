@@ -21,6 +21,7 @@ from widgets.time.config import TimeWidget
 from widgets.workspace_apps.config import WorkspaceAppsWidget
 from widgets.workspaces.config import WorkspacesWidget
 from widgets.settings.config import SettingsBarContent
+from widgets.battery.config import BatteryWidget
 from utils.assets import settings_icon
 
 
@@ -93,6 +94,7 @@ class UserModuleBar(WaylandWindow):
         workspaces_widget = WorkspacesWidget()
         workspace_apps_widget = WorkspaceAppsWidget()
 
+        battery_widget = BatteryWidget()
         settings_img = settings_icon(22)
         settings_button = Button(
             style_classes=["settings-bar-button", "flat"],
@@ -121,12 +123,12 @@ class UserModuleBar(WaylandWindow):
             style_classes=["bar-section", "bar-section-center"],
             children=[workspaces_widget],
         )
-        # Right bar: settings
+        # Right bar: battery, then settings
         right_bar = Box(
             orientation="horizontal",
-            spacing=0,
+            spacing=12,
             style_classes=["bar-section", "bar-section-right"],
-            children=[settings_button],
+            children=[battery_widget, settings_button],
         )
 
         self.children = CenterBox(

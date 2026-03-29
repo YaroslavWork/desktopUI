@@ -47,7 +47,9 @@ window {
 .bar-section .settings-bar-button,
 .bar-section .settings-bar-button:hover,
 .bar-section .settings-bar-button:active,
-.bar-section .settings-bar-button:focus {
+.bar-section .settings-bar-button:focus,
+.bar-section .battery-widget,
+.bar-section .battery-percent-label {
   color: var(--primary);
   border-color: var(--primary);
 }
@@ -199,6 +201,44 @@ window {
 }
 .workspace-button.occupied.active {
   border-color: var(--primary);
+}
+
+/* Battery: thin pill track, fill grows with level; % label on the right */
+.battery-widget {
+  padding: 0;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.battery-track {
+  min-width: 96px;
+  min-height: 8px;
+  padding: 0;
+  border-radius: 4px;
+  background-color: var(--surface-variant);
+  background-image: none;
+  border-image: none;
+}
+.battery-fill {
+  min-height: 8px;
+  border-radius: 4px;
+  background-color: var(--primary);
+  background-image: none;
+  border-image: none;
+}
+.battery-widget.battery-charging .battery-fill {
+  background-color: var(--tertiary);
+}
+.battery-widget.battery-low .battery-fill {
+  background-color: var(--error);
+}
+.battery-percent-label {
+  min-width: 36px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
 }
 
 /* Settings bar button - gear icon, same style as user button */
