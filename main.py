@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Main entry point: runs all widgets and services together."""
 
-import re
 import sys
 from pathlib import Path
 
@@ -12,11 +11,12 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Initialize services (side effect on import)
 from services.user_service import user_service  # noqa: F401
 from services.workspaces_service import workspaces_service  # noqa: F401
+from services.theme_service import register_stylesheet_reload  # noqa: F401
 
 from fabric import Application
-from fabric.utils.helpers import compile_css
 
 from modules.config import UserModuleBar, UserPopup, SettingsPopup
+from utils.css_compile import compile_desktop_ui_stylesheet
 
 
 if __name__ == "__main__":
@@ -32,8 +32,14 @@ if __name__ == "__main__":
     app._user_popup = user_popup
     app._settings_popup = settings_popup
 
-    css = (PROJECT_ROOT / "style.css").read_text()
-    compiled = compile_css(css, base_path=str(PROJECT_ROOT))
-    compiled = re.sub(r":root\s*\{([^}]*)\}", lambda m: m.group(1).strip(), compiled, flags=re.DOTALL)
+    compiled = compile_desktop_ui_stylesheet(PROJECT_ROOT)
     app.set_stylesheet_from_string(compiled, compile=False)
+
+    register_stylesheet_reload(
+        lambda: app.set_stylesheet_from_string(
+            compile_desktop_ui_stylesheet(PROJECT_ROOT),
+            compile=False,
+        )
+    )
+
     app.run()

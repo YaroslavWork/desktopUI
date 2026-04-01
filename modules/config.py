@@ -17,6 +17,7 @@ from fabric.widgets.wayland import WaylandWindow
 from services.user_service import user_service  # noqa: F401
 from services.workspace_apps_service import workspace_apps_service  # noqa: F401
 from services.mpris_service import mpris_service  # noqa: F401
+from services.wallpaper_service import wallpaper_service  # noqa: F401
 from widgets.user.config import UserBarContent
 from widgets.time.config import TimeWidget
 from widgets.workspace_apps.config import WorkspaceAppsWidget
@@ -32,7 +33,7 @@ USER_WIDGET_WIDTH = 220
 user_widget = UserBarContent(size=(USER_WIDGET_WIDTH, -1))
 
 # Settings widget for popup
-settings_widget = SettingsBarContent(size=(140, -1))
+settings_widget = SettingsBarContent(size=(220, -1))
 
 # Popup: user widget overlay below the bar
 USER_POPUP_MARGIN_TOP = 4  # Below bar
@@ -164,18 +165,17 @@ class UserModuleBar(WaylandWindow):
 if __name__ == "__main__":
     from fabric import Application
 
+    from utils.css_compile import compile_desktop_ui_stylesheet
+
     bar = UserModuleBar()
     popup = UserPopup()
     popup.hide()
 
-    import re
-    from fabric.utils.helpers import compile_css
-
     app = Application("user-module-bar", bar)
     app.add_window(popup)
     app._user_popup = popup
-    css = (PROJECT_ROOT / "style.css").read_text()
-    compiled = compile_css(css, base_path=str(PROJECT_ROOT))
-    compiled = re.sub(r":root\s*\{([^}]*)\}", lambda m: m.group(1).strip(), compiled, flags=re.DOTALL)
-    app.set_stylesheet_from_string(compiled, compile=False)
+    app.set_stylesheet_from_string(
+        compile_desktop_ui_stylesheet(PROJECT_ROOT),
+        compile=False,
+    )
     app.run()

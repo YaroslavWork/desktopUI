@@ -1,6 +1,5 @@
 """Settings widget: popup with logout, block, shutdown buttons."""
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -14,7 +13,8 @@ from gi.repository import Gtk
 from fabric.widgets.box import Box
 from fabric.widgets.button import Button
 
-from utils.assets import logout_icon, lock_icon, power_icon
+from services.wallpaper_service import wallpaper_service
+from utils.assets import load_icon, logout_icon, lock_icon, power_icon
 
 
 def _run(cmd: list[str]) -> None:
@@ -29,13 +29,25 @@ class SettingsBarContent(Box):
     """Settings popup content: logout, block, shutdown buttons with icons."""
 
     def __init__(self, **kwargs):
+        wallpaper_img = load_icon("Video, Audio, Sound/Gallery Minimalistic.svg", 20)
         logout_img = logout_icon(20)
         lock_img = lock_icon(20)
         power_img = power_icon(20)
 
+        wallpaper_btn = Button(
+            style_classes=["settings-action-button", "flat"],
+            size=(200, 40),
+        )
+        wallpaper_btn.set_relief(Gtk.ReliefStyle.NONE)
+        if wallpaper_img:
+            wallpaper_btn.set_image(wallpaper_img)
+            wallpaper_btn.set_always_show_image(True)
+        wallpaper_btn.set_label("Change wallpaper")
+        wallpaper_btn.connect("clicked", self._on_change_wallpaper)
+
         logout_btn = Button(
             style_classes=["settings-action-button", "flat"],
-            size=(120, 40),
+            size=(200, 40),
         )
         logout_btn.set_relief(Gtk.ReliefStyle.NONE)
         if logout_img:
@@ -46,7 +58,7 @@ class SettingsBarContent(Box):
 
         block_btn = Button(
             style_classes=["settings-action-button", "flat"],
-            size=(120, 40),
+            size=(200, 40),
         )
         block_btn.set_relief(Gtk.ReliefStyle.NONE)
         if lock_img:
@@ -57,7 +69,7 @@ class SettingsBarContent(Box):
 
         shutdown_btn = Button(
             style_classes=["settings-action-button", "flat"],
-            size=(120, 40),
+            size=(200, 40),
         )
         shutdown_btn.set_relief(Gtk.ReliefStyle.NONE)
         if power_img:
@@ -70,9 +82,16 @@ class SettingsBarContent(Box):
             orientation="vertical",
             spacing=4,
             style_classes=["settings-widget"],
-            children=[logout_btn, block_btn, shutdown_btn],
+            children=[wallpaper_btn, logout_btn, block_btn, shutdown_btn],
             **kwargs,
         )
+
+    def _on_change_wallpaper(self, _btn) -> None:
+        ok, msg = wallpaper_service.apply_random()
+        if not ok:
+            _btn.set_tooltip_text(msg)
+            return
+        _btn.set_tooltip_text(f"Applied:\n{msg}")
 
     def _on_logout(self, _btn) -> None:
         _run(["hyprctl", "dispatch", "exit"])
