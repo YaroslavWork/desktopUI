@@ -49,7 +49,16 @@ window {
 .bar-section .settings-bar-button:active,
 .bar-section .settings-bar-button:focus,
 .bar-section .battery-widget,
-.bar-section .battery-percent-label {
+.bar-section .battery-percent-label,
+.bar-section .media-controls-widget,
+.bar-section .media-title-label,
+.bar-section .media-control-button,
+.bar-section .media-control-button:hover,
+.bar-section .media-control-button:active,
+.bar-section .media-control-button:focus,
+.bar-section .media-album-art,
+.bar-section .media-source-pill,
+.bar-section .media-source-pill label {
   color: var(--primary);
   border-color: var(--primary);
 }
@@ -101,6 +110,80 @@ window {
 .workspace-app-button.active {
   box-shadow: 0 0 10px 2px var(--primary);
   border: 2px solid var(--primary);
+}
+
+/* MPRIS media controls */
+.media-controls-widget {
+  padding: 0;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.media-sources-row {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.media-source-pill {
+  padding: 2px 8px;
+  min-height: 24px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: bold;
+  background-color: var(--surface-variant);
+  background-image: none;
+  border-image: none;
+  outline: none;
+  color: var(--on-surface-variant);
+}
+.media-source-pill:hover {
+  background-color: var(--outline-variant);
+}
+.media-source-pill.active {
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+.media-source-pill.active label {
+  color: var(--on-primary);
+}
+.media-album-art {
+  min-width: 56px;
+  min-height: 38px;
+  border-radius: 6px;
+  background-color: var(--surface-variant);
+  padding: 0;
+  background-image: none;
+  border-image: none;
+}
+.media-control-button {
+  border-radius: 50%;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+  outline: none;
+  opacity: 1;
+}
+.media-control-button:hover {
+  background-color: var(--surface-variant);
+}
+.media-title-label {
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 0;
+  padding: 0 4px;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+  color: var(--primary);
+}
+.media-controls-widget.media-idle .media-title-label,
+.media-controls-widget.media-idle .media-control-button {
+  opacity: 0.55;
 }
 
 /* Time widget - cycles on click, clock icon + time */

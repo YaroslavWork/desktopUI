@@ -68,6 +68,10 @@ ICON_SETTINGS = "Settings, Fine Tuning/Settings.svg"
 ICON_LOGOUT = "Arrows Action/Logout.svg"
 ICON_LOCK = "Security/Lock Keyhole Minimalistic.svg"
 ICON_POWER = "Essentional, UI/Power.svg"
+ICON_PLAY = "Video, Audio, Sound/Play.svg"
+ICON_PAUSE = "Video, Audio, Sound/Pause.svg"
+ICON_SKIP_PREV = "Video, Audio, Sound/Skip Previous.svg"
+ICON_SKIP_NEXT = "Video, Audio, Sound/Skip Next.svg"
 
 
 def clock_icon(size: int = 24) -> Gtk.Image | None:
@@ -103,3 +107,19 @@ def lock_icon(size: int = 24) -> Gtk.Image | None:
 
 def power_icon(size: int = 24) -> Gtk.Image | None:
     return load_icon(ICON_POWER, size)
+
+
+def play_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_PLAY, size)
+
+
+def pause_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_PAUSE, size)
+
+
+def skip_prev_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_SKIP_PREV, size)
+
+
+def skip_next_icon(size: int = 24) -> Gtk.Image | None:
+    return load_icon(ICON_SKIP_NEXT, size)

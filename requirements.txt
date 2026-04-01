@@ -1,0 +1,3 @@
+# desktopUI bar — most deps are system packages:
+#   GTK 3, PyGObject, GdkPixbuf, session D-Bus (Spotify / MPRIS, album art over HTTPS).
+# Python venv usually only needs whatever you already use to run Fabric (see Fabric docs).

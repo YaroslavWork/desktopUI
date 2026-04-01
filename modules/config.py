@@ -16,12 +16,14 @@ from fabric.widgets.wayland import WaylandWindow
 
 from services.user_service import user_service  # noqa: F401
 from services.workspace_apps_service import workspace_apps_service  # noqa: F401
+from services.mpris_service import mpris_service  # noqa: F401
 from widgets.user.config import UserBarContent
 from widgets.time.config import TimeWidget
 from widgets.workspace_apps.config import WorkspaceAppsWidget
 from widgets.workspaces.config import WorkspacesWidget
 from widgets.settings.config import SettingsBarContent
 from widgets.battery.config import BatteryWidget
+from widgets.media.config import MediaControlsWidget
 from utils.assets import settings_icon
 
 
@@ -93,6 +95,7 @@ class UserModuleBar(WaylandWindow):
         time_widget = TimeWidget(size=(100, -1))
         workspaces_widget = WorkspacesWidget()
         workspace_apps_widget = WorkspaceAppsWidget()
+        media_widget = MediaControlsWidget()
 
         battery_widget = BatteryWidget()
         settings_img = settings_icon(22)
@@ -109,12 +112,12 @@ class UserModuleBar(WaylandWindow):
             settings_button.set_label("⚙")
         settings_button.connect("clicked", self._on_settings_clicked)
 
-        # Left bar: user, time, active apps
+        # Left bar: user, time, active apps, media
         left_bar = Box(
             orientation="horizontal",
             spacing=12,
             style_classes=["bar-section", "bar-section-left"],
-            children=[user_button, time_widget, workspace_apps_widget],
+            children=[user_button, time_widget, workspace_apps_widget, media_widget],
         )
         # Center bar: workspaces
         center_bar = Box(
