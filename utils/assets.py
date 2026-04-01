@@ -1,5 +1,6 @@
 """Load SVG icons from SVG/ folder as Gtk.Image."""
 
+import re
 from pathlib import Path
 
 gi = __import__("gi")
@@ -10,8 +11,31 @@ from gi.repository import Gtk, GdkPixbuf
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SVG_ROOT = PROJECT_ROOT / "SVG" / "Outline"
 
-# Primary color for icon tinting (matches colors.css)
-PRIMARY_COLOR = "#ffb68c"
+# Fallback when colors.css is missing or unparsable (must stay in sync with a sane default theme)
+PRIMARY_FALLBACK = "#ffb68c"
+
+_PRIMARY_RE = re.compile(
+    r"--primary:\s*(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\))\s*;",
+    re.MULTILINE,
+)
+
+
+def read_primary_tint_hex() -> str:
+    """Read --primary from project colors.css for SVG tinting (matugen updates this file)."""
+    path = PROJECT_ROOT / "colors.css"
+    if not path.is_file():
+        return PRIMARY_FALLBACK
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return PRIMARY_FALLBACK
+    m = _PRIMARY_RE.search(text)
+    if not m:
+        return PRIMARY_FALLBACK
+    value = m.group(1).strip()
+    if value.startswith("#") and len(value) in (4, 5, 7, 9):
+        return value
+    return PRIMARY_FALLBACK
 
 
 def _load_svg(path: Path, size: int, color: str | None = None) -> Gtk.Image | None:
@@ -44,7 +68,8 @@ def _load_svg(path: Path, size: int, color: str | None = None) -> Gtk.Image | No
 def load_icon(rel_path: str, size: int = 24, tint: bool = True) -> Gtk.Image | None:
     """Load icon from SVG/Outline. rel_path is like 'Time/Clock Circle.svg'."""
     path = SVG_ROOT / rel_path
-    return _load_svg(path, size, PRIMARY_COLOR if tint else None)
+    color = read_primary_tint_hex() if tint else None
+    return _load_svg(path, size, color)
 
 
 # Workspace icons: Sun + 8 planet variants

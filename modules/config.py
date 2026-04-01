@@ -113,6 +113,11 @@ class UserModuleBar(WaylandWindow):
             settings_button.set_label("⚙")
         settings_button.connect("clicked", self._on_settings_clicked)
 
+        self._time_widget = time_widget
+        self._workspace_apps_widget = workspace_apps_widget
+        self._media_widget = media_widget
+        self._settings_button = settings_button
+
         # Left bar: user, time, active apps, media
         left_bar = Box(
             orientation="horizontal",
@@ -142,6 +147,15 @@ class UserModuleBar(WaylandWindow):
             spacing=8,
             style_classes=["top-bar"],
         )
+
+    def refresh_tinted_icons(self) -> None:
+        img = settings_icon(22)
+        if img:
+            self._settings_button.set_image(img)
+            self._settings_button.set_always_show_image(True)
+        self._time_widget.refresh_tinted_icons()
+        self._workspace_apps_widget.refresh_tinted_icons()
+        self._media_widget.refresh_tinted_icons()
 
     def _on_settings_clicked(self, _button):
         app = self.get_application()

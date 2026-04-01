@@ -11,11 +11,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Initialize services (side effect on import)
 from services.user_service import user_service  # noqa: F401
 from services.workspaces_service import workspaces_service  # noqa: F401
-from services.theme_service import register_stylesheet_reload  # noqa: F401
+from services.theme_service import register_icon_reload, register_stylesheet_reload  # noqa: F401
 
 from fabric import Application
 
-from modules.config import UserModuleBar, UserPopup, SettingsPopup
+from modules.config import UserModuleBar, UserPopup, SettingsPopup, settings_widget, user_widget
 from utils.css_compile import compile_desktop_ui_stylesheet
 
 
@@ -41,5 +41,9 @@ if __name__ == "__main__":
             compile=False,
         )
     )
+
+    register_icon_reload(bar.refresh_tinted_icons)
+    register_icon_reload(user_widget.refresh_tinted_icons)
+    register_icon_reload(settings_widget.refresh_tinted_icons)
 
     app.run()

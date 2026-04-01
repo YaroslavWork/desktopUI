@@ -141,6 +141,11 @@ class WorkspaceAppsWidget(Box):
         self._update_active_glow()
         return True
 
+    def refresh_tinted_icons(self) -> None:
+        if hasattr(self, "_last_apps"):
+            del self._last_apps
+        self._update()
+
     def _update_active_glow(self):
         """Add glow to the active/focused window's button."""
         active_addr = workspace_apps_service.get_active_window_address()

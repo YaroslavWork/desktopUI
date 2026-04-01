@@ -44,6 +44,7 @@ class SettingsBarContent(Box):
             wallpaper_btn.set_always_show_image(True)
         wallpaper_btn.set_label("Change wallpaper")
         wallpaper_btn.connect("clicked", self._on_change_wallpaper)
+        self._wallpaper_btn = wallpaper_btn
 
         logout_btn = Button(
             style_classes=["settings-action-button", "flat"],
@@ -55,6 +56,7 @@ class SettingsBarContent(Box):
             logout_btn.set_always_show_image(True)
         logout_btn.set_label("Log out")
         logout_btn.connect("clicked", self._on_logout)
+        self._logout_btn = logout_btn
 
         block_btn = Button(
             style_classes=["settings-action-button", "flat"],
@@ -66,6 +68,7 @@ class SettingsBarContent(Box):
             block_btn.set_always_show_image(True)
         block_btn.set_label("Block")
         block_btn.connect("clicked", self._on_block)
+        self._block_btn = block_btn
 
         shutdown_btn = Button(
             style_classes=["settings-action-button", "flat"],
@@ -77,6 +80,7 @@ class SettingsBarContent(Box):
             shutdown_btn.set_always_show_image(True)
         shutdown_btn.set_label("Shutdown")
         shutdown_btn.connect("clicked", self._on_shutdown)
+        self._shutdown_btn = shutdown_btn
 
         super().__init__(
             orientation="vertical",
@@ -85,6 +89,18 @@ class SettingsBarContent(Box):
             children=[wallpaper_btn, logout_btn, block_btn, shutdown_btn],
             **kwargs,
         )
+
+    def refresh_tinted_icons(self) -> None:
+        pairs = [
+            (self._wallpaper_btn, load_icon("Video, Audio, Sound/Gallery Minimalistic.svg", 20)),
+            (self._logout_btn, logout_icon(20)),
+            (self._block_btn, lock_icon(20)),
+            (self._shutdown_btn, power_icon(20)),
+        ]
+        for btn, img in pairs:
+            if img:
+                btn.set_image(img)
+                btn.set_always_show_image(True)
 
     def _on_change_wallpaper(self, _btn) -> None:
         ok, msg = wallpaper_service.apply_random()

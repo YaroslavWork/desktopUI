@@ -54,6 +54,21 @@ class TimeWidget(Button):
         self.connect("scroll-event", self._on_scroll)
         self._update()
 
+    def refresh_tinted_icons(self) -> None:
+        child = self.get_child()
+        if child is None:
+            return
+        ch = child.get_children()
+        if len(ch) < 2:
+            return
+        first = ch[0]
+        child.remove(first)
+        img = clock_icon(18)
+        if img:
+            child.pack_start(img, False, False, 0)
+            child.reorder_child(img, 0)
+        child.show_all()
+
     def _update(self) -> bool:
         self._time_label.set_label(time.strftime(self.FORMATS[self._current_index]))
         return True

@@ -32,6 +32,7 @@ class UserBarContent(Box):
             label="Current session: 00:00:00",
             style_classes=["user-session"],
         )
+        self._user_icon_header: Box | None = None
         user_img = user_icon(32)
         if user_img is not None:
             header = Box(
@@ -40,6 +41,7 @@ class UserBarContent(Box):
                 children=[user_img, self._welcome_label],
                 style_classes=["user-widget-header"],
             )
+            self._user_icon_header = header
             children = [header, self._session_label]
         else:
             children = [self._welcome_label, self._session_label]
@@ -52,6 +54,20 @@ class UserBarContent(Box):
         )
         self._update_session()
         invoke_repeater(1000, self._update_session)
+
+    def refresh_tinted_icons(self) -> None:
+        if self._user_icon_header is None:
+            return
+        box = self._user_icon_header
+        ch = box.get_children()
+        if len(ch) < 2:
+            return
+        box.remove(ch[0])
+        img = user_icon(32)
+        if img:
+            box.pack_start(img, False, False, 0)
+            box.reorder_child(img, 0)
+        box.show_all()
 
     def _update_session(self) -> bool:
         seconds = user_service.refresh_session_seconds()

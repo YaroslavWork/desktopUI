@@ -114,6 +114,18 @@ class MediaControlsWidget(Box):
         invoke_repeater(POLL_MS, self._poll)
         self.refresh()
 
+    def refresh_tinted_icons(self) -> None:
+        for btn, fn in (
+            (self._prev_btn, skip_prev_icon),
+            (self._next_btn, skip_next_icon),
+        ):
+            img = fn(ICON_SZ)
+            if img:
+                btn.set_image(img)
+                btn.set_always_show_image(True)
+        self._last_playing = None
+        self.refresh()
+
     def _set_cover_from_url(self, url: str | None) -> None:
         if url == self._art_url_loaded:
             return
