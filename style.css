@@ -186,28 +186,52 @@ window {
   opacity: 0.55;
 }
 
-/* Time widget - cycles on click, clock icon + time */
+/* Time + date stack + weather (secondary accent for icon + °C) */
 .time-widget {
-  color: var(--background);
   padding: 0 4px;
-  font-size: 11px;
-  font-weight: bold;
-  min-width: 80px;
-  background-color: var(--primary);
+  min-width: 0;
+  background-color: transparent;
   background-image: none;
   border: none;
   border-image: none;
   outline: none;
 }
-.time-widget-content,
-.time-widget-label {
-  color: var(--background);
-  font-size: 15px;
-  font-weight: bold;
+.time-widget-inner,
+.time-widget-stack {
   background-color: transparent;
   background-image: none;
   border-image: none;
-  outline: none;
+}
+.time-widget-clock-line {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--primary);
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.time-widget-date-line {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--on-surface-variant);
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.time-widget-weather-row {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.time-widget-weather-temp {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--tertiary);
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
 }
 
 /* User letter button - invisible background, primary accent border and letter */

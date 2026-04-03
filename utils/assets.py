@@ -13,9 +13,14 @@ SVG_ROOT = PROJECT_ROOT / "SVG" / "Outline"
 
 # Fallback when colors.css is missing or unparsable (must stay in sync with a sane default theme)
 PRIMARY_FALLBACK = "#ffb68c"
+SECONDARY_FALLBACK = "#e5bfaa"
 
 _PRIMARY_RE = re.compile(
     r"--primary:\s*(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\))\s*;",
+    re.MULTILINE,
+)
+_SECONDARY_RE = re.compile(
+    r"--secondary:\s*(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\))\s*;",
     re.MULTILINE,
 )
 
@@ -36,6 +41,24 @@ def read_primary_tint_hex() -> str:
     if value.startswith("#") and len(value) in (4, 5, 7, 9):
         return value
     return PRIMARY_FALLBACK
+
+
+def read_secondary_tint_hex() -> str:
+    """Read --secondary from colors.css (weather icon + temperature accent)."""
+    path = PROJECT_ROOT / "colors.css"
+    if not path.is_file():
+        return SECONDARY_FALLBACK
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return SECONDARY_FALLBACK
+    m = _SECONDARY_RE.search(text)
+    if not m:
+        return SECONDARY_FALLBACK
+    value = m.group(1).strip()
+    if value.startswith("#") and len(value) in (4, 5, 7, 9):
+        return value
+    return SECONDARY_FALLBACK
 
 
 def _load_svg(path: Path, size: int, color: str | None = None) -> Gtk.Image | None:
@@ -65,10 +88,19 @@ def _load_svg(path: Path, size: int, color: str | None = None) -> Gtk.Image | No
         return None
 
 
-def load_icon(rel_path: str, size: int = 24, tint: bool = True) -> Gtk.Image | None:
+def load_icon(
+    rel_path: str,
+    size: int = 24,
+    tint: bool = True,
+    *,
+    primary: bool = True,
+) -> Gtk.Image | None:
     """Load icon from SVG/Outline. rel_path is like 'Time/Clock Circle.svg'."""
     path = SVG_ROOT / rel_path
-    color = read_primary_tint_hex() if tint else None
+    if not tint:
+        color = None
+    else:
+        color = read_primary_tint_hex() if primary else read_secondary_tint_hex()
     return _load_svg(path, size, color)
 
 

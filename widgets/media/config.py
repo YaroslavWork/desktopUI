@@ -221,6 +221,12 @@ class MediaControlsWidget(Box):
         return True
 
     def refresh(self) -> None:
+        if not mpris_service.list_player_names():
+            self.set_visible(False)
+            return
+
+        self.set_visible(True)
+
         snap = mpris_service.get_snapshot()
         status = snap.get("status")
         title = (snap.get("title") or "").strip()

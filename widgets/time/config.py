@@ -2,93 +2,146 @@ import sys
 import time
 from pathlib import Path
 
-# Ensure project root is in path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 gi = __import__("gi")
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
+from gi.repository import GLib, Gtk
 
 from fabric.widgets.box import Box
 from fabric.widgets.button import Button
 from fabric.widgets.label import Label
 from fabric.utils.helpers import invoke_repeater
 
-from utils.assets import clock_icon
+from services.weather_service import weather_service
+from utils.assets import load_icon
+
+POLL_MS = 1000
+WEATHER_POLL_MS = 600_000
+WEATHER_ICON_SIZE = 22
 
 
 class TimeWidget(Button):
-    """Time widget that cycles through formats on click: hh:mm:ss -> dd.mm.yyyy -> [weekday] Week x."""
-
-    FORMATS = (
-        "%H:%M:%S",      # Time hh:mm:ss
-        "%d.%m.%Y",      # Date dd.mm.yyyy
-        "Week %V: %A",    # Day of week + ISO week number
-    )
+    """24h clock + weekday/date; wttr.in weather with secondary-colored icon and temperature."""
 
     def __init__(self, **kwargs):
-        self._time_label = Label(label="", style_classes=["time-widget-label"])
-        clock_img = clock_icon(18)
-        if clock_img is not None:
-            content = Box(
-                orientation="horizontal",
-                spacing=6,
-                children=[clock_img, self._time_label],
-                style_classes=["time-widget-content"],
-            )
-        else:
-            content = self._time_label
+        self._clock_label = Label(
+            label="",
+            style_classes=["time-widget-clock-line"],
+        )
+        self._clock_label.set_xalign(0.0)
+
+        self._date_label = Label(
+            label="",
+            style_classes=["time-widget-date-line"],
+        )
+        self._date_label.set_xalign(0.0)
+
+        time_stack = Box(
+            orientation="vertical",
+            spacing=2,
+            style_classes=["time-widget-stack"],
+            children=[self._clock_label, self._date_label],
+        )
+        time_stack.set_hexpand(False)
+
+        self._weather_temp_label = Label(
+            label="— °C",
+            style_classes=["time-widget-weather-temp"],
+        )
+        self._weather_temp_label.set_xalign(0.0)
+
+        self._last_weather_icon_rel = "Weather/Temperature.svg"
+        self._weather_img = load_icon(self._last_weather_icon_rel, WEATHER_ICON_SIZE, primary=False)
+
+        self._weather_row = Box(
+            orientation="horizontal",
+            spacing=8,
+            style_classes=["time-widget-weather-row"],
+        )
+        self._weather_row.set_hexpand(False)
+        self._weather_row.set_valign(Gtk.Align.CENTER)
+        if self._weather_img is not None:
+            self._weather_row.add(self._weather_img)
+        self._weather_row.add(self._weather_temp_label)
+
+        inner = Box(
+            orientation="horizontal",
+            spacing=16,
+            style_classes=["time-widget-inner"],
+            children=[
+                time_stack,
+                self._weather_row,
+            ],
+        )
+        inner.set_hexpand(False)
+
         super().__init__(
-            child=content,
+            child=inner,
             style_classes=["time-widget", "flat"],
             v_align="center",
             **kwargs,
         )
         self.set_relief(Gtk.ReliefStyle.NONE)
-        content.set_halign(Gtk.Align.CENTER)
-        content.set_hexpand(False)
-        self.add_events(Gdk.EventMask.SCROLL_MASK)
-        self._current_index = 0
-        self._repeater_id = invoke_repeater(1000, self._update)
-        self.connect("button-press-event", self._on_press)
-        self.connect("scroll-event", self._on_scroll)
-        self._update()
+        inner.set_halign(Gtk.Align.CENTER)
 
-    def refresh_tinted_icons(self) -> None:
-        child = self.get_child()
-        if child is None:
-            return
-        ch = child.get_children()
-        if len(ch) < 2:
-            return
-        first = ch[0]
-        child.remove(first)
-        img = clock_icon(18)
-        if img:
-            child.pack_start(img, False, False, 0)
-            child.reorder_child(img, 0)
-        child.show_all()
+        invoke_repeater(POLL_MS, self._tick_clock)
+        invoke_repeater(WEATHER_POLL_MS, self._tick_weather)
+        GLib.idle_add(self._weather_idle_bootstrap)
 
-    def _update(self) -> bool:
-        self._time_label.set_label(time.strftime(self.FORMATS[self._current_index]))
+        self._tick_clock()
+
+    def _weather_idle_bootstrap(self) -> bool:
+        weather_service.refresh()
+        self._apply_weather_snapshot()
+        return False
+
+    def _tick_clock(self) -> bool:
+        self._clock_label.set_label(time.strftime("%H:%M:%S"))
+        t = time.localtime()
+        self._date_label.set_label(time.strftime("%A, %B ", t) + str(t.tm_mday))
         return True
 
-    def _cycle_next(self):
-        self._current_index = (self._current_index + 1) % len(self.FORMATS)
-        self._update()
+    def _tick_weather(self) -> bool:
+        weather_service.refresh()
+        self._apply_weather_snapshot()
+        return True
 
-    def _cycle_prev(self):
-        self._current_index = (self._current_index - 1) % len(self.FORMATS)
-        self._update()
+    def _apply_weather_snapshot(self) -> None:
+        snap = weather_service.snapshot()
+        rel = str(snap.get("icon_rel") or "Weather/Temperature.svg")
+        self._last_weather_icon_rel = rel
 
-    def _on_press(self, _widget, event):
-        if event.button == 1:
-            self._cycle_next()
-        elif event.button == 3:
-            self._cycle_prev()
+        temp = snap.get("temp_c")
+        if temp is not None and snap.get("ok"):
+            self._weather_temp_label.set_label(f"{float(temp):.1f}°C")
+        else:
+            self._weather_temp_label.set_label("— °C")
 
-    def _on_scroll(self, _widget, event):
-        if event.direction == Gdk.ScrollDirection.UP:
-            self._cycle_next()
-        elif event.direction == Gdk.ScrollDirection.DOWN:
-            self._cycle_prev()
+        if self._weather_img is not None:
+            try:
+                self._weather_row.remove(self._weather_img)
+            except Exception:
+                pass
+            self._weather_img = None
+
+        new_img = load_icon(rel, WEATHER_ICON_SIZE, primary=False)
+        self._weather_img = new_img
+        if new_img is not None:
+            self._weather_row.pack_start(new_img, False, False, 0)
+            self._weather_row.reorder_child(new_img, 0)
+        self._weather_row.show_all()
+
+    def refresh_tinted_icons(self) -> None:
+        rel = self._last_weather_icon_rel
+        if self._weather_img is not None:
+            try:
+                self._weather_row.remove(self._weather_img)
+            except Exception:
+                pass
+            self._weather_img = None
+        self._weather_img = load_icon(rel, WEATHER_ICON_SIZE, primary=False)
+        if self._weather_img is not None:
+            self._weather_row.pack_start(self._weather_img, False, False, 0)
+            self._weather_row.reorder_child(self._weather_img, 0)
+        self._weather_row.show_all()
