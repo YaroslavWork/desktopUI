@@ -16,6 +16,8 @@ from services.theme_service import register_icon_reload, register_stylesheet_rel
 from fabric import Application
 
 from modules.config import UserModuleBar, UserPopup, SettingsPopup, settings_widget, user_widget
+from widgets.display_settings.config import DisplaySettingsPopup
+from widgets.settings.config import set_display_settings_opener
 from utils.css_compile import compile_desktop_ui_stylesheet
 
 
@@ -25,12 +27,22 @@ if __name__ == "__main__":
     user_popup.hide()
     settings_popup = SettingsPopup()
     settings_popup.hide()
+    display_settings_popup = DisplaySettingsPopup()
+    display_settings_popup.hide()
 
     app = Application("desktop-ui", bar)
     app.add_window(user_popup)
     app.add_window(settings_popup)
+    app.add_window(display_settings_popup)
     app._user_popup = user_popup
     app._settings_popup = settings_popup
+    app._display_settings_popup = display_settings_popup
+
+    def _open_display_settings() -> None:
+        settings_popup.hide()
+        display_settings_popup.open_centered()
+
+    set_display_settings_opener(_open_display_settings)
 
     compiled = compile_desktop_ui_stylesheet(PROJECT_ROOT)
     app.set_stylesheet_from_string(compiled, compile=False)

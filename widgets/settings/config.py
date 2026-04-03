@@ -3,8 +3,16 @@
 import subprocess
 import sys
 from pathlib import Path
+from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+_display_settings_opener: Callable[[], None] | None = None
+
+
+def set_display_settings_opener(fn: Callable[[], None] | None) -> None:
+    global _display_settings_opener
+    _display_settings_opener = fn
 
 gi = __import__("gi")
 gi.require_version("Gtk", "3.0")
@@ -82,11 +90,26 @@ class SettingsBarContent(Box):
         shutdown_btn.connect("clicked", self._on_shutdown)
         self._shutdown_btn = shutdown_btn
 
+        display_btn = Button(
+            style_classes=["settings-action-button", "flat"],
+            size=(200, 40),
+        )
+        display_btn.set_relief(Gtk.ReliefStyle.NONE)
+        display_btn.set_label("Display Settings")
+        display_btn.connect("clicked", self._on_display_settings)
+        self._display_btn = display_btn
+
         super().__init__(
             orientation="vertical",
             spacing=4,
             style_classes=["settings-widget"],
-            children=[wallpaper_btn, logout_btn, block_btn, shutdown_btn],
+            children=[
+                wallpaper_btn,
+                display_btn,
+                logout_btn,
+                block_btn,
+                shutdown_btn,
+            ],
             **kwargs,
         )
 
@@ -101,6 +124,10 @@ class SettingsBarContent(Box):
             if img:
                 btn.set_image(img)
                 btn.set_always_show_image(True)
+
+    def _on_display_settings(self, _btn) -> None:
+        if _display_settings_opener is not None:
+            _display_settings_opener()
 
     def _on_change_wallpaper(self, _btn) -> None:
         ok, msg = wallpaper_service.apply_random()
