@@ -339,10 +339,25 @@ window {
 .battery-widget.battery-low .battery-fill {
   background-color: var(--error);
 }
+.battery-text-col {
+  min-width: 52px;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
 .battery-percent-label {
   min-width: 36px;
   font-size: 12px;
   font-weight: bold;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.battery-eta-label {
+  font-size: 10px;
+  font-weight: normal;
+  opacity: 0.88;
+  color: var(--on-surface);
   background-color: transparent;
   background-image: none;
   border-image: none;
