@@ -92,7 +92,7 @@ class UserModuleBar(WaylandWindow):
             v_align="center",
         )
         user_button.set_relief(Gtk.ReliefStyle.NONE)
-        user_button.connect("clicked", self._on_galaxy_clicked)
+        user_button.connect("clicked", self._on_user_clicked)
 
         time_widget = TimeWidget(size=(280, -1))
         workspaces_widget = WorkspacesWidget()
@@ -167,7 +167,7 @@ class UserModuleBar(WaylandWindow):
             else:
                 popup.show_all()
 
-    def _on_galaxy_clicked(self, _button):
+    def _on_user_clicked(self, _button):
         app = self.get_application()
         if app and hasattr(app, "_user_popup"):
             popup = app._user_popup

@@ -9,7 +9,7 @@ from fabric.utils.helpers import compile_css
 
 
 def compile_desktop_ui_stylesheet(project_root: Path) -> str:
-    css = (project_root / "style.css").read_text()
+    css = (project_root / "style.css").read_text(encoding="utf-8")
     compiled = compile_css(css, base_path=str(project_root))
     return re.sub(
         r":root\s*\{([^}]*)\}",
