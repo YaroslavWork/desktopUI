@@ -18,7 +18,7 @@ from utils.assets import load_icon
 
 POLL_MS = 1000
 WEATHER_POLL_MS = 600_000
-WEATHER_ICON_SIZE = 22
+WEATHER_ICON_SIZE = 18  # ~80% of prior 22 (time widget scaled down)
 
 
 class TimeWidget(Button):
@@ -39,7 +39,7 @@ class TimeWidget(Button):
 
         time_stack = Box(
             orientation="vertical",
-            spacing=2,
+            spacing=1,
             style_classes=["time-widget-stack"],
             children=[self._clock_label, self._date_label],
         )
@@ -56,7 +56,7 @@ class TimeWidget(Button):
 
         self._weather_row = Box(
             orientation="horizontal",
-            spacing=8,
+            spacing=6,
             style_classes=["time-widget-weather-row"],
         )
         self._weather_row.set_hexpand(False)
@@ -67,7 +67,7 @@ class TimeWidget(Button):
 
         inner = Box(
             orientation="horizontal",
-            spacing=16,
+            spacing=13,
             style_classes=["time-widget-inner"],
             children=[
                 time_stack,

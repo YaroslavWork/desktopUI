@@ -21,7 +21,6 @@ from services.wallpaper_service import wallpaper_service  # noqa: F401
 from services.weather_service import weather_service  # noqa: F401
 from widgets.user.config import UserBarContent
 from widgets.time.config import TimeWidget
-from widgets.workspace_apps.config import WorkspaceAppsWidget
 from widgets.workspaces.config import WorkspacesWidget
 from widgets.settings.config import SettingsBarContent
 from widgets.battery.config import BatteryWidget
@@ -117,9 +116,8 @@ class UserModuleBar(WaylandWindow):
         user_button.set_relief(Gtk.ReliefStyle.NONE)
         user_button.connect("clicked", self._on_user_clicked)
 
-        time_widget = TimeWidget(size=(280, -1))
+        time_widget = TimeWidget(size=(240, -1))
         workspaces_widget = WorkspacesWidget()
-        workspace_apps_widget = WorkspaceAppsWidget()
         media_widget = MediaControlsWidget()
 
         battery_widget = BatteryWidget()
@@ -143,7 +141,7 @@ class UserModuleBar(WaylandWindow):
         _attach_conditional_pill(battery_pill, battery_widget)
 
         self._time_widget = time_widget
-        self._workspace_apps_widget = workspace_apps_widget
+        self._workspaces_widget = workspaces_widget
         self._media_widget = media_widget
         self._wifi_widget = wifi_widget
         self._settings_button = settings_button
@@ -156,7 +154,6 @@ class UserModuleBar(WaylandWindow):
             children=[
                 _bar_pill(user_button),
                 _bar_pill(time_widget),
-                _bar_pill(workspace_apps_widget),
                 media_pill,
             ],
         )
@@ -193,7 +190,7 @@ class UserModuleBar(WaylandWindow):
             self._settings_button.set_image(img)
             self._settings_button.set_always_show_image(True)
         self._time_widget.refresh_tinted_icons()
-        self._workspace_apps_widget.refresh_tinted_icons()
+        self._workspaces_widget.refresh_tinted_icons()
         self._media_widget.refresh_tinted_icons()
         self._wifi_widget.refresh_tinted_icons()
 

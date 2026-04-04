@@ -1,8 +1,9 @@
-"""Service for getting open apps in current Hyprland workspace."""
+"""Service for getting open apps per Hyprland workspace."""
 
 import json
 import subprocess
 from dataclasses import dataclass
+
 from fabric.core.service import Service
 
 
@@ -13,15 +14,63 @@ class WorkspaceApp:
     title: str
 
 
+def _client_workspace_id(c: dict) -> int | None:
+    if not c.get("mapped", True):
+        return None
+    ws = c.get("workspace")
+    if isinstance(ws, dict):
+        wid = ws.get("id")
+    elif isinstance(ws, int):
+        wid = ws
+    else:
+        return None
+    if wid is None:
+        return None
+    try:
+        i = int(wid)
+    except (TypeError, ValueError):
+        return None
+    if 1 <= i <= 9:
+        return i
+    return None
+
+
 class WorkspaceAppsService(Service):
-    """Provides list of open apps in the current Hyprland workspace."""
+    """Provides open windows grouped by workspace (1–9) and helpers for the active workspace."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._apps: list[WorkspaceApp] = []
 
-    def get_apps(self) -> list[WorkspaceApp]:
-        """Fetch and return apps in current workspace."""
+    def get_apps_by_workspace(self) -> dict[int, list[WorkspaceApp]]:
+        """All mapped windows on workspaces 1–9, keyed by workspace id."""
+        empty = {i: [] for i in range(1, 10)}
+        try:
+            clients = subprocess.run(
+                ["hyprctl", "-j", "clients"],
+                capture_output=True,
+                text=True,
+                timeout=1,
+            )
+            if clients.returncode != 0:
+                return empty
+            clients_data = json.loads(clients.stdout)
+            result: dict[int, list[WorkspaceApp]] = {i: [] for i in range(1, 10)}
+            for c in clients_data:
+                wid = _client_workspace_id(c)
+                if wid is None:
+                    continue
+                result[wid].append(
+                    WorkspaceApp(
+                        address=str(c.get("address", "")),
+                        app_class=c.get("class", "?"),
+                        title=c.get("title", ""),
+                    )
+                )
+            return result
+        except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
+            return empty
+
+    def _get_active_workspace_id(self) -> int | None:
         try:
             active = subprocess.run(
                 ["hyprctl", "-j", "activeworkspace"],
@@ -30,63 +79,24 @@ class WorkspaceAppsService(Service):
                 timeout=1,
             )
             if active.returncode != 0:
-                return []
-            ws_data = json.loads(active.stdout)
-            ws_id = ws_data.get("id")
+                return None
+            ws_id = json.loads(active.stdout).get("id")
+            return int(ws_id) if ws_id is not None else None
+        except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError, TypeError, ValueError):
+            return None
 
-            clients = subprocess.run(
-                ["hyprctl", "-j", "clients"],
-                capture_output=True,
-                text=True,
-                timeout=1,
-            )
-            if clients.returncode != 0:
-                return []
-            clients_data = json.loads(clients.stdout)
-
-            self._apps = [
-                WorkspaceApp(
-                    address=str(c.get("address", "")),
-                    app_class=c.get("class", "?"),
-                    title=c.get("title", ""),
-                )
-                for c in clients_data
-                if isinstance(c.get("workspace"), dict)
-                and c["workspace"].get("id") == ws_id
-                and c.get("mapped", True)
-            ]
-            return self._apps
-        except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
+    def get_apps(self) -> list[WorkspaceApp]:
+        """Windows on the currently active workspace."""
+        by_ws = self.get_apps_by_workspace()
+        aid = self._get_active_workspace_id()
+        if aid is None or aid not in by_ws:
             return []
+        return by_ws[aid]
 
     def get_workspace_ids_with_apps(self) -> set[int]:
-        """Return set of workspace IDs (1-9) that have at least one mapped window."""
-        try:
-            clients = subprocess.run(
-                ["hyprctl", "-j", "clients"],
-                capture_output=True,
-                text=True,
-                timeout=1,
-            )
-            if clients.returncode != 0:
-                return set()
-            clients_data = json.loads(clients.stdout)
-            ids = set()
-            for c in clients_data:
-                if not c.get("mapped", True):
-                    continue
-                ws = c.get("workspace")
-                if isinstance(ws, dict):
-                    wid = ws.get("id")
-                elif isinstance(ws, int):
-                    wid = ws
-                else:
-                    continue
-                if wid is not None and 1 <= int(wid) <= 9:
-                    ids.add(int(wid))
-            return ids
-        except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
-            return set()
+        """Workspace IDs (1–9) that have at least one mapped window."""
+        by_ws = self.get_apps_by_workspace()
+        return {wid for wid, apps in by_ws.items() if apps}
 
     def get_active_window_address(self) -> str | None:
         """Return address of the currently focused window."""

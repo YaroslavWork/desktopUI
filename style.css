@@ -51,15 +51,12 @@ window {
 .bar-section .user-letter-button:hover,
 .bar-section .user-letter-button:active,
 .bar-section .user-letter-button:focus,
-.bar-section .workspace-apps-widget,
-.bar-section .workspace-app-button,
-.bar-section .workspace-app-letter,
+.bar-section .workspace-app-button:not(.workspace-app-letter),
 .bar-section .settings-bar-button,
 .bar-section .settings-bar-button:hover,
 .bar-section .settings-bar-button:active,
 .bar-section .settings-bar-button:focus,
 .bar-section .wifi-widget-ssid,
-.bar-section .wifi-widget-rate,
 .bar-section .battery-widget,
 .bar-section .battery-percent-label,
 .bar-section .media-controls-widget,
@@ -75,6 +72,13 @@ window {
   border-color: var(--primary);
 }
 
+/* Workspace app letter fallback (inactive): secondary accent */
+.bar-section .workspace-app-button.workspace-app-letter:not(.active),
+.bar-section .workspace-app-button.workspace-app-letter:not(.active) label {
+  color: var(--secondary);
+  border-color: var(--secondary);
+}
+
 /* Wi-Fi control: secondary accent (icon is tinted to --secondary in code) */
 .bar-section .wifi-widget,
 .bar-section .wifi-widget:hover,
@@ -84,9 +88,17 @@ window {
   border-color: var(--secondary);
 }
 
-.bar-section .workspace-app-button.active {
-  border-color: var(--primary);
-  box-shadow: 0 0 10px 2px var(--primary);
+.bar-section .wifi-widget-rate {
+  color: var(--tertiary);
+  border-color: var(--tertiary);
+}
+
+.bar-section .workspace-app-button.active,
+.bar-section .workspace-app-button.active label {
+  color: var(--on-tertiary);
+  border-color: var(--tertiary);
+  background-color: var(--tertiary);
+  box-shadow: none;
 }
 
 .bar-section .workspace-button,
@@ -110,6 +122,30 @@ window {
   border-color: var(--primary);
 }
 
+/* Workspace strip: planet + apps; occupied = one surface-variant pill */
+.workspace-column,
+.workspace-column-apps {
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+
+.workspace-column.workspace-column-occupied {
+  background-color: var(--surface-variant);
+  background-image: none;
+  border-image: none;
+  border-radius: 12px;
+  padding: 2px 8px;
+}
+
+/* One flat chip: planet uses column background until active (primary) */
+.bar-section .workspace-column.workspace-column-occupied .workspace-button:not(.active),
+.bar-section .workspace-column.workspace-column-occupied .workspace-button:not(.active):hover,
+.bar-section .workspace-column.workspace-column-occupied .workspace-button:not(.active):focus {
+  background-color: transparent;
+  background-image: none;
+}
+
 /* Workspace apps - icons or first letters */
 .workspace-apps-widget,
 .workspace-app-button,
@@ -123,14 +159,55 @@ window {
   font-size: 12px;
   font-weight: bold;
 }
+.workspace-app-button.workspace-app-letter:not(.active) {
+  padding: 0;
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+  outline: none;
+  font-size: 12px;
+  font-weight: bold;
+}
+.workspace-app-button.workspace-app-letter:not(.active),
+.workspace-app-button.workspace-app-letter:not(.active) label {
+  color: var(--secondary);
+}
 .workspace-app-button {
   border-radius: 50%;
   min-width: 28px;
   min-height: 28px;
+  padding: 0;
+  margin: 0;
+  border-width: 0;
+  border-style: none;
+}
+.workspace-app-button image {
+  padding: 0;
+  margin: 0;
+}
+.workspace-app-button label {
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+}
+/* Letter fallback: keep the Gtk.Label from widening the button */
+.workspace-app-button.workspace-app-letter label {
+  min-width: 0;
+  padding: 0;
 }
 .workspace-app-button.active {
-  box-shadow: 0 0 10px 2px var(--primary);
-  border: 2px solid var(--primary);
+  background-color: var(--tertiary);
+  color: var(--on-tertiary);
+  border: none;
+  box-shadow: none;
+  border-radius: 50%;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+}
+.workspace-app-button.active label {
+  color: var(--on-tertiary);
 }
 
 /* MPRIS media controls */
@@ -209,7 +286,7 @@ window {
 
 /* Time + date stack + weather (secondary accent for icon + °C) */
 .time-widget {
-  padding: 0 4px;
+  padding: 0 3px;
   min-width: 0;
   background-color: transparent;
   background-image: none;
@@ -501,7 +578,7 @@ window {
 .wifi-widget-rate {
   font-size: 10px;
   font-weight: 600;
-  color: var(--on-surface-variant);
+  color: var(--tertiary);
   background-color: transparent;
   background-image: none;
   border-image: none;

@@ -1,5 +1,6 @@
-"""Widget showing open apps in current workspace with icon or first letter."""
+"""GTK button for a Hyprland window (icon / letter); used inside combined workspace strips."""
 
+import subprocess
 import sys
 from pathlib import Path
 
@@ -9,149 +10,87 @@ gi = __import__("gi")
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from fabric.widgets.box import Box
 from fabric.widgets.button import Button
-from fabric.utils.helpers import invoke_repeater
 
-from services.workspace_apps_service import workspace_apps_service, WorkspaceApp
-from utils.assets import window_icon
+from services.workspace_apps_service import WorkspaceApp
 
 
-def _get_app_display(app: WorkspaceApp) -> tuple[str | None, str]:
-    """Return (icon_name or None, fallback_letter)."""
-    icon_name = app.app_class.lower().replace(" ", "-")
-    return (icon_name, (app.app_class or "?")[0].upper())
+def _get_app_display(app: WorkspaceApp) -> tuple[str, str]:
+    """GTK icon name (may be empty) and a single letter for fallback."""
+    cls = (app.app_class or "").strip()
+    icon_name = cls.lower().replace(" ", "-") if cls else ""
+    name_for_letter = cls or (app.title or "").strip() or "?"
+    letter = name_for_letter[0].upper()
+    return (icon_name, letter)
 
 
-# Events that should trigger workspace apps refresh
-WORKSPACE_REFRESH_EVENTS = (
-    "workspace", "workspacev2", "openwindow", "closewindow",
-    "movewindow", "movewindowv2", "activewindow", "activewindowv2",
-)
-
-
-class WorkspaceAppsWidget(Box):
-    """Shows open apps in current workspace as icon or first letter buttons."""
-
-    def __init__(self, **kwargs):
-        super().__init__(
-            orientation="horizontal",
-            spacing=4,
-            style_classes=["workspace-apps-widget"],
-            **kwargs,
+def _on_app_clicked(_btn: Button, app: WorkspaceApp) -> None:
+    try:
+        subprocess.run(
+            ["hyprctl", "dispatch", "focuswindow", f"address:{app.address}"],
+            capture_output=True,
+            timeout=1,
         )
-        self._buttons: list[tuple[WorkspaceApp, Button]] = []
-        self._connect_hyprland_events()
-        self._update()
+    except (subprocess.SubprocessError, OSError):
+        pass
 
-    def _connect_hyprland_events(self):
-        """Connect to Hyprland events for workspace/window changes."""
-        try:
-            from fabric.hyprland import Hyprland
 
-            self._hyprland = Hyprland(commands_only=False)
-            for evt in WORKSPACE_REFRESH_EVENTS:
-                self._hyprland.connect(f"event::{evt}", self._on_hyprland_event)
-        except Exception:
-            self._hyprland = None
-            invoke_repeater(2000, self._update)  # Fallback: poll when Hyprland unavailable
+def _letter_label(text: str) -> Gtk.Label:
+    """Single-line label sized like one glyph so the parent button stays square."""
+    lab = Gtk.Label(label=text)
+    lab.set_xalign(0.5)
+    lab.set_max_width_chars(1)
+    lab.set_width_chars(1)
+    lab.set_line_wrap(False)
+    lab.set_halign(Gtk.Align.CENTER)
+    lab.set_valign(Gtk.Align.CENTER)
+    lab.set_vexpand(False)
+    lab.set_hexpand(False)
+    return lab
 
-    def _on_hyprland_event(self, _event):
-        self._update()
 
-    def _clear_buttons(self):
-        for _app, btn in self._buttons:
-            self.remove(btn)
-        self._buttons.clear()
-
-    def _create_app_button(self, app: WorkspaceApp) -> Button:
-        icon_name, letter = _get_app_display(app)
-        try:
-            theme = Gtk.IconTheme.get_default()
-            if theme.has_icon(icon_name):
-                img = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.BUTTON)
-                btn = Button(
-                    child=img,
-                    style_classes=["workspace-app-button", "flat"],
-                    size=(28, 28),
-                    v_align="center",
-                )
-            else:
-                fallback_img = window_icon(20)
-                if fallback_img is not None:
-                    btn = Button(
-                        child=fallback_img,
-                        style_classes=["workspace-app-button", "flat"],
-                        size=(28, 28),
-                        v_align="center",
-                    )
-                else:
-                    btn = Button(
-                        label=letter,
-                        style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
-                        size=(28, 28),
-                        v_align="center",
-                    )
-        except Exception:
-            fallback_img = window_icon(20)
-            if fallback_img is not None:
-                btn = Button(
-                    child=fallback_img,
-                    style_classes=["workspace-app-button", "flat"],
-                    size=(28, 28),
-                    v_align="center",
-                )
-            else:
-                btn = Button(
-                    label=letter,
-                    style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
-                    size=(28, 28),
-                    v_align="center",
-                )
-        btn.set_relief(Gtk.ReliefStyle.NONE)
-        btn.set_tooltip_text(app.title or app.app_class)
-        btn.connect("clicked", self._on_app_clicked, app)
-        return btn
-
-    def _on_app_clicked(self, _btn, app: WorkspaceApp):
-        import subprocess
-        try:
-            subprocess.run(
-                ["hyprctl", "dispatch", "focuswindow", f"address:{app.address}"],
-                capture_output=True,
-                timeout=1,
+def build_workspace_app_button(app: WorkspaceApp) -> Button:
+    """Round button: themed icon when available, otherwise first letter of class or title."""
+    icon_name, letter = _get_app_display(app)
+    try:
+        theme = Gtk.IconTheme.get_default()
+        if icon_name and theme.has_icon(icon_name):
+            img = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.BUTTON)
+            img.set_halign(Gtk.Align.CENTER)
+            img.set_valign(Gtk.Align.CENTER)
+            btn = Button(
+                child=img,
+                style_classes=["workspace-app-button", "flat"],
+                size=(28, 28),
+                v_align="center",
             )
-        except Exception:
-            pass
+        else:
+            btn = Button(
+                child=_letter_label(letter),
+                style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
+                size=(28, 28),
+                v_align="center",
+            )
+    except Exception:
+        btn = Button(
+            child=_letter_label(letter),
+            style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
+            size=(28, 28),
+            v_align="center",
+        )
+    btn.set_relief(Gtk.ReliefStyle.NONE)
+    btn.set_hexpand(False)
+    btn.set_vexpand(False)
+    btn.set_size_request(28, 28)
+    btn.set_tooltip_text(app.title or app.app_class)
+    btn.connect("clicked", _on_app_clicked, app)
+    setattr(btn, "_desktopui_app_address", app.address)
+    return btn
 
-    def _update(self) -> bool:
-        apps = workspace_apps_service.get_apps()
-        current = [(a.address, a.app_class) for a in apps]
-        if hasattr(self, "_last_apps") and self._last_apps == current:
-            self._update_active_glow()
-            return True
-        self._last_apps = current
 
-        self._clear_buttons()
-        for app in apps:
-            btn = self._create_app_button(app)
-            self._buttons.append((app, btn))
-            self.add(btn)
-        self.show_all()
-        self._update_active_glow()
-        return True
-
-    def refresh_tinted_icons(self) -> None:
-        if hasattr(self, "_last_apps"):
-            del self._last_apps
-        self._update()
-
-    def _update_active_glow(self):
-        """Add glow to the active/focused window's button."""
-        active_addr = workspace_apps_service.get_active_window_address()
-        for app, btn in self._buttons:
-            ctx = btn.get_style_context()
-            if app.address == active_addr:
-                ctx.add_class("active")
-            else:
-                ctx.remove_class("active")
+def set_app_button_active(btn: Button, active: bool) -> None:
+    ctx = btn.get_style_context()
+    if active:
+        ctx.add_class("active")
+    else:
+        ctx.remove_class("active")
