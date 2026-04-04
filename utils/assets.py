@@ -1,6 +1,7 @@
 """Load SVG icons from SVG/ folder as Gtk.Image."""
 
 import re
+import tempfile
 from pathlib import Path
 
 gi = __import__("gi")
@@ -14,6 +15,7 @@ SVG_ROOT = PROJECT_ROOT / "SVG" / "Outline"
 # Fallback when colors.css is missing or unparsable (must stay in sync with a sane default theme)
 PRIMARY_FALLBACK = "#ffb68c"
 SECONDARY_FALLBACK = "#e5bfaa"
+TERTIARY_FALLBACK = "#e8b9d5"
 
 _PRIMARY_RE = re.compile(
     r"--primary:\s*(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\))\s*;",
@@ -21,6 +23,10 @@ _PRIMARY_RE = re.compile(
 )
 _SECONDARY_RE = re.compile(
     r"--secondary:\s*(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\))\s*;",
+    re.MULTILINE,
+)
+_TERTIARY_RE = re.compile(
+    r"--tertiary:\s*(#[0-9A-Fa-f]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\))\s*;",
     re.MULTILINE,
 )
 
@@ -61,6 +67,44 @@ def read_secondary_tint_hex() -> str:
     return SECONDARY_FALLBACK
 
 
+def read_tertiary_tint_hex() -> str:
+    """Read --tertiary from colors.css (weather icon gradient end stop)."""
+    path = PROJECT_ROOT / "colors.css"
+    if not path.is_file():
+        return TERTIARY_FALLBACK
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return TERTIARY_FALLBACK
+    m = _TERTIARY_RE.search(text)
+    if not m:
+        return TERTIARY_FALLBACK
+    value = m.group(1).strip()
+    if value.startswith("#") and len(value) in (4, 5, 7, 9):
+        return value
+    return TERTIARY_FALLBACK
+
+
+def _svg_apply_primary_tertiary_gradient(content: str, grad_id: str, primary: str, tertiary: str) -> str:
+    """Inject a vertical linearGradient and paint former black fills/strokes with it."""
+    defs = (
+        f'<defs><linearGradient id="{grad_id}" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0%" stop-color="{primary}"/>'
+        f'<stop offset="100%" stop-color="{tertiary}"/></linearGradient></defs>'
+    )
+    m = re.match(r"(<svg[^>]*>)", content, re.DOTALL)
+    if m:
+        content = m.group(1) + defs + content[m.end() :]
+    else:
+        content = defs + content
+    url = f"url(#{grad_id})"
+    content = content.replace('fill="black"', f'fill="{url}"')
+    content = content.replace("fill='black'", f"fill='{url}'")
+    content = content.replace('stroke="black"', f'stroke="{url}"')
+    content = content.replace("stroke='black'", f"stroke='{url}'")
+    return content
+
+
 def _load_svg(path: Path, size: int, color: str | None = None) -> Gtk.Image | None:
     """Load SVG as Gtk.Image. Optionally replace black with color."""
     if not path.exists():
@@ -72,7 +116,6 @@ def _load_svg(path: Path, size: int, color: str | None = None) -> Gtk.Image | No
             content = content.replace("fill='black'", f"fill='{color}'")
             content = content.replace('stroke="black"', f'stroke="{color}"')
             # Write to temp and load - GdkPixbuf needs file path
-            import tempfile
             with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
                 f.write(content.encode())
                 tmp = f.name
@@ -102,6 +145,32 @@ def load_icon(
     else:
         color = read_primary_tint_hex() if primary else read_secondary_tint_hex()
     return _load_svg(path, size, color)
+
+
+def load_weather_icon(rel_path: str, size: int = 24) -> Gtk.Image | None:
+    """Weather glyph with a vertical SVG gradient from --primary (top) to --tertiary (bottom)."""
+    path = SVG_ROOT / rel_path
+    if not path.is_file():
+        return None
+    try:
+        raw = path.read_text(encoding="utf-8")
+        grad_id = "desktopuiWeatherGrad"
+        colored = _svg_apply_primary_tertiary_gradient(
+            raw,
+            grad_id,
+            read_primary_tint_hex(),
+            read_tertiary_tint_hex(),
+        )
+        with tempfile.NamedTemporaryFile(suffix=".svg", delete=False) as f:
+            f.write(colored.encode("utf-8"))
+            tmp = f.name
+        try:
+            pb = GdkPixbuf.Pixbuf.new_from_file_at_size(tmp, size, size)
+            return Gtk.Image.new_from_pixbuf(pb)
+        finally:
+            Path(tmp).unlink(missing_ok=True)
+    except Exception:
+        return None
 
 
 # Workspace icons: Sun + 8 planet variants

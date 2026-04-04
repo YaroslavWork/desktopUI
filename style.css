@@ -324,8 +324,7 @@ window {
   border-image: none;
 }
 .time-widget-weather-temp {
-  font-size: 13px;
-  font-weight: bold;
+  font-size: 25px;
   color: var(--tertiary);
   background-color: transparent;
   background-image: none;

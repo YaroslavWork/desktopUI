@@ -14,11 +14,11 @@ from fabric.widgets.label import Label
 from fabric.utils.helpers import invoke_repeater
 
 from services.weather_service import weather_service
-from utils.assets import load_icon
+from utils.assets import load_weather_icon
 
 POLL_MS = 1000
 WEATHER_POLL_MS = 600_000
-WEATHER_ICON_SIZE = 18  # ~80% of prior 22 (time widget scaled down)
+WEATHER_ICON_SIZE = 20
 
 
 class TimeWidget(Button):
@@ -52,7 +52,7 @@ class TimeWidget(Button):
         self._weather_temp_label.set_xalign(0.0)
 
         self._last_weather_icon_rel = "Weather/Temperature.svg"
-        self._weather_img = load_icon(self._last_weather_icon_rel, WEATHER_ICON_SIZE, primary=False)
+        self._weather_img = load_weather_icon(self._last_weather_icon_rel, WEATHER_ICON_SIZE)
 
         self._weather_row = Box(
             orientation="horizontal",
@@ -114,7 +114,7 @@ class TimeWidget(Button):
 
         temp = snap.get("temp_c")
         if temp is not None and snap.get("ok"):
-            self._weather_temp_label.set_label(f"{float(temp):.1f}°C")
+            self._weather_temp_label.set_label(f"{float(temp):.0f}°C")
         else:
             self._weather_temp_label.set_label("— °C")
 
@@ -125,7 +125,7 @@ class TimeWidget(Button):
                 pass
             self._weather_img = None
 
-        new_img = load_icon(rel, WEATHER_ICON_SIZE, primary=False)
+        new_img = load_weather_icon(rel, WEATHER_ICON_SIZE)
         self._weather_img = new_img
         if new_img is not None:
             self._weather_row.pack_start(new_img, False, False, 0)
@@ -140,7 +140,7 @@ class TimeWidget(Button):
             except Exception:
                 pass
             self._weather_img = None
-        self._weather_img = load_icon(rel, WEATHER_ICON_SIZE, primary=False)
+        self._weather_img = load_weather_icon(rel, WEATHER_ICON_SIZE)
         if self._weather_img is not None:
             self._weather_row.pack_start(self._weather_img, False, False, 0)
             self._weather_row.reorder_child(self._weather_img, 0)
