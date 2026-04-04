@@ -81,6 +81,16 @@ def spawn_nmtui() -> bool:
     return False
 
 
+SSID_DISPLAY_MAX = 7
+
+
+def _short_ssid(ssid: str) -> str:
+    s = (ssid or "").strip()
+    if len(s) <= SSID_DISPLAY_MAX:
+        return s
+    return s[:SSID_DISPLAY_MAX]
+
+
 def _fmt_bytes_per_sec(bps: float) -> str:
     if bps < 1:
         return "0 B/s"
@@ -100,8 +110,9 @@ def _status_line(st: WiFiLinkState) -> str:
         return "No adapter"
     if st.state == "connected":
         if st.ssid:
+            short = _short_ssid(st.ssid)
             sig = f" · {st.signal}%" if st.signal is not None else ""
-            return f"{st.ssid}{sig}"
+            return f"{short}{sig}"
         return "Connected"
     if st.state == "unavailable":
         return "Unavailable"
@@ -162,22 +173,27 @@ class WiFiWidget(Button):
     def _on_clicked(self, *_args) -> None:
         if not spawn_nmtui():
             self.set_tooltip_text("Could not open a terminal for nmtui. Set DESKTOPUI_TERMINAL or TERMINAL.")
-        else:
-            self.set_tooltip_text("NetworkManager: open nmtui (manage connections)")
 
     def _tick(self) -> bool:
         st, rx_bps, tx_bps = wifi_service.poll_with_throughput()
         connected = st.state == "connected"
         self._last_connected = connected
+        tip_base = "NetworkManager: open nmtui (manage connections)"
         if connected:
             self._text_col.show()
             self._ssid_l.set_label(_status_line(st))
             self._down_l.set_label(f"↓ {_fmt_bytes_per_sec(rx_bps)}")
             self._up_l.set_label(f"↑ {_fmt_bytes_per_sec(tx_bps)}")
             self.set_size_request(-1, -1)
+            full = (st.ssid or "").strip()
+            if full and len(full) > SSID_DISPLAY_MAX:
+                self.set_tooltip_text(f"{full}\n\n{tip_base}")
+            else:
+                self.set_tooltip_text(tip_base)
         else:
             self._text_col.hide()
             self.set_size_request(ICON_ONLY_SIZE, ICON_ONLY_SIZE)
+            self.set_tooltip_text(tip_base)
 
         ctx = self.get_style_context()
         if connected:
