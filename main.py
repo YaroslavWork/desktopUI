@@ -15,7 +15,14 @@ from services.theme_service import register_icon_reload, register_stylesheet_rel
 
 from fabric import Application
 
-from modules.config import UserModuleBar, UserPopup, SettingsPopup, settings_widget, user_widget
+from modules.config import (
+    UserModuleBar,
+    UserPopup,
+    SettingsPopup,
+    settings_widget,
+    user_widget,
+    wifi_widget,
+)
 from widgets.display_settings.config import DisplaySettingsPopup
 from widgets.settings.config import set_display_settings_opener
 from utils.css_compile import compile_desktop_ui_stylesheet
@@ -57,5 +64,6 @@ if __name__ == "__main__":
     register_icon_reload(bar.refresh_tinted_icons)
     register_icon_reload(user_widget.refresh_tinted_icons)
     register_icon_reload(settings_widget.refresh_tinted_icons)
+    register_icon_reload(wifi_widget.refresh_tinted_icons)
 
     app.run()

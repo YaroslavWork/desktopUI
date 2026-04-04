@@ -48,6 +48,8 @@ window {
 .bar-section .settings-bar-button:hover,
 .bar-section .settings-bar-button:active,
 .bar-section .settings-bar-button:focus,
+.bar-section .wifi-widget-ssid,
+.bar-section .wifi-widget-rate,
 .bar-section .battery-widget,
 .bar-section .battery-percent-label,
 .bar-section .media-controls-widget,
@@ -61,6 +63,15 @@ window {
 .bar-section .media-source-pill label {
   color: var(--primary);
   border-color: var(--primary);
+}
+
+/* Wi-Fi control: secondary accent (icon is tinted to --secondary in code) */
+.bar-section .wifi-widget,
+.bar-section .wifi-widget:hover,
+.bar-section .wifi-widget:active,
+.bar-section .wifi-widget:focus {
+  color: var(--secondary);
+  border-color: var(--secondary);
 }
 
 .bar-section .workspace-app-button.active {
@@ -442,4 +453,46 @@ window {
 .display-settings-apply:hover,
 .display-settings-close:hover {
   background-color: var(--surface-variant);
+}
+
+/* Wi-Fi bar module (icon-only when disconnected; nmtui on click) */
+.wifi-widget {
+  padding: 0 6px;
+  min-width: 0;
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  border-image: none;
+  outline: none;
+}
+.wifi-widget-idle {
+  opacity: 0.88;
+  padding: 0;
+}
+.wifi-widget-inner,
+.wifi-widget-text-col {
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.wifi-widget-inner image {
+  min-width: 24px;
+  min-height: 24px;
+  opacity: 1;
+}
+.wifi-widget-ssid {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--primary);
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
+}
+.wifi-widget-rate {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  background-color: transparent;
+  background-image: none;
+  border-image: none;
 }

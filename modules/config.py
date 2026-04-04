@@ -26,6 +26,7 @@ from widgets.workspaces.config import WorkspacesWidget
 from widgets.settings.config import SettingsBarContent
 from widgets.battery.config import BatteryWidget
 from widgets.media.config import MediaControlsWidget
+from widgets.wifi.config import WiFiWidget
 from utils.assets import settings_icon
 
 
@@ -35,6 +36,8 @@ user_widget = UserBarContent(size=(USER_WIDGET_WIDTH, -1))
 
 # Settings widget for popup
 settings_widget = SettingsBarContent(size=(220, -1))
+
+wifi_widget = WiFiWidget()
 
 # Popup: user widget overlay below the bar
 USER_POPUP_MARGIN_TOP = 4  # Below bar
@@ -117,6 +120,7 @@ class UserModuleBar(WaylandWindow):
         self._time_widget = time_widget
         self._workspace_apps_widget = workspace_apps_widget
         self._media_widget = media_widget
+        self._wifi_widget = wifi_widget
         self._settings_button = settings_button
 
         # Left bar: user, time, active apps, media
@@ -133,12 +137,12 @@ class UserModuleBar(WaylandWindow):
             style_classes=["bar-section", "bar-section-center"],
             children=[workspaces_widget],
         )
-        # Right bar: battery, then settings
+        # Right bar: Wi-Fi, battery, settings
         right_bar = Box(
             orientation="horizontal",
             spacing=12,
             style_classes=["bar-section", "bar-section-right"],
-            children=[battery_widget, settings_button],
+            children=[wifi_widget, battery_widget, settings_button],
         )
 
         self.children = CenterBox(
@@ -157,6 +161,7 @@ class UserModuleBar(WaylandWindow):
         self._time_widget.refresh_tinted_icons()
         self._workspace_apps_widget.refresh_tinted_icons()
         self._media_widget.refresh_tinted_icons()
+        self._wifi_widget.refresh_tinted_icons()
 
     def _on_settings_clicked(self, _button):
         app = self.get_application()
@@ -175,7 +180,6 @@ class UserModuleBar(WaylandWindow):
                 popup.hide()
             else:
                 popup.show_all()
-
 
 if __name__ == "__main__":
     from fabric import Application
