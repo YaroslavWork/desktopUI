@@ -30,6 +30,26 @@ from widgets.wifi.config import WiFiWidget
 from utils.assets import settings_icon
 
 
+def _bar_pill(child):
+    """Rounded surface behind a single bar control; outer bar rows stay transparent."""
+    return Box(
+        orientation="horizontal",
+        style_classes=["bar-widget-bg"],
+        v_align="center",
+        children=[child],
+    )
+
+
+def _attach_conditional_pill(pill: Box, child) -> None:
+    """Hide the pill when the inner widget is hidden (no empty gap on the bar)."""
+
+    def _sync() -> None:
+        pill.set_visible(child.get_visible())
+
+    child.connect("notify::visible", lambda *_: _sync())
+    _sync()
+
+
 # User widget with fixed width (for popup)
 USER_WIDGET_WIDTH = 220
 user_widget = UserBarContent(size=(USER_WIDGET_WIDTH, -1))
@@ -117,6 +137,11 @@ class UserModuleBar(WaylandWindow):
             settings_button.set_label("⚙")
         settings_button.connect("clicked", self._on_settings_clicked)
 
+        media_pill = _bar_pill(media_widget)
+        battery_pill = _bar_pill(battery_widget)
+        _attach_conditional_pill(media_pill, media_widget)
+        _attach_conditional_pill(battery_pill, battery_widget)
+
         self._time_widget = time_widget
         self._workspace_apps_widget = workspace_apps_widget
         self._media_widget = media_widget
@@ -128,21 +153,30 @@ class UserModuleBar(WaylandWindow):
             orientation="horizontal",
             spacing=12,
             style_classes=["bar-section", "bar-section-left"],
-            children=[user_button, time_widget, workspace_apps_widget, media_widget],
+            children=[
+                _bar_pill(user_button),
+                _bar_pill(time_widget),
+                _bar_pill(workspace_apps_widget),
+                media_pill,
+            ],
         )
         # Center bar: workspaces
         center_bar = Box(
             orientation="horizontal",
             spacing=8,
             style_classes=["bar-section", "bar-section-center"],
-            children=[workspaces_widget],
+            children=[_bar_pill(workspaces_widget)],
         )
         # Right bar: Wi-Fi, battery, settings
         right_bar = Box(
             orientation="horizontal",
             spacing=12,
             style_classes=["bar-section", "bar-section-right"],
-            children=[wifi_widget, battery_widget, settings_button],
+            children=[
+                _bar_pill(wifi_widget),
+                battery_pill,
+                _bar_pill(settings_button),
+            ],
         )
 
         self.children = CenterBox(

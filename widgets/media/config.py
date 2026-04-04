@@ -225,23 +225,17 @@ class MediaControlsWidget(Box):
             self.set_visible(False)
             return
 
+        snap = mpris_service.get_snapshot()
+        if not snap.get("player"):
+            self.set_visible(False)
+            return
+
         self.set_visible(True)
 
-        snap = mpris_service.get_snapshot()
         status = snap.get("status")
         title = (snap.get("title") or "").strip()
         artist = (snap.get("artist") or "").strip()
         vol = snap.get("volume")
-
-        if not snap.get("player"):
-            self._title.set_label("—")
-            self._set_cover_from_url(None)
-            self._sync_sources_row([], None)
-            self.get_style_context().add_class("media-idle")
-            self.set_tooltip_text(snap.get("tooltip") or "")
-            self._last_playing = None
-            self._set_play_icon(False)
-            return
 
         self._sync_sources_row(mpris_service.get_players_overview(), snap.get("player"))
 
