@@ -15,6 +15,7 @@ from fabric.utils.helpers import invoke_repeater
 
 from services.weather_service import weather_service
 from utils.assets import load_weather_icon
+from utils.main_thread_debug import main_thread_span
 
 POLL_MS = 1000
 WEATHER_POLL_MS = 600_000
@@ -108,40 +109,42 @@ class TimeWidget(Button):
         return True
 
     def _apply_weather_snapshot(self) -> None:
-        snap = weather_service.snapshot()
-        rel = str(snap.get("icon_rel") or "Weather/Temperature.svg")
-        self._last_weather_icon_rel = rel
+        with main_thread_span("weather widget apply (labels + icon)"):
+            snap = weather_service.snapshot()
+            rel = str(snap.get("icon_rel") or "Weather/Temperature.svg")
+            self._last_weather_icon_rel = rel
 
-        temp = snap.get("temp_c")
-        if temp is not None and snap.get("ok"):
-            self._weather_temp_label.set_label(f"{float(temp):.0f}°C")
-        else:
-            self._weather_temp_label.set_label("— °C")
+            temp = snap.get("temp_c")
+            if temp is not None and snap.get("ok"):
+                self._weather_temp_label.set_label(f"{float(temp):.0f}°C")
+            else:
+                self._weather_temp_label.set_label("— °C")
 
-        if self._weather_img is not None:
-            try:
-                self._weather_row.remove(self._weather_img)
-            except Exception:
-                pass
-            self._weather_img = None
+            if self._weather_img is not None:
+                try:
+                    self._weather_row.remove(self._weather_img)
+                except Exception:
+                    pass
+                self._weather_img = None
 
-        new_img = load_weather_icon(rel, WEATHER_ICON_SIZE)
-        self._weather_img = new_img
-        if new_img is not None:
-            self._weather_row.pack_start(new_img, False, False, 0)
-            self._weather_row.reorder_child(new_img, 0)
-        self._weather_row.show_all()
+            new_img = load_weather_icon(rel, WEATHER_ICON_SIZE)
+            self._weather_img = new_img
+            if new_img is not None:
+                self._weather_row.pack_start(new_img, False, False, 0)
+                self._weather_row.reorder_child(new_img, 0)
+            self._weather_row.show_all()
 
     def refresh_tinted_icons(self) -> None:
-        rel = self._last_weather_icon_rel
-        if self._weather_img is not None:
-            try:
-                self._weather_row.remove(self._weather_img)
-            except Exception:
-                pass
-            self._weather_img = None
-        self._weather_img = load_weather_icon(rel, WEATHER_ICON_SIZE)
-        if self._weather_img is not None:
-            self._weather_row.pack_start(self._weather_img, False, False, 0)
-            self._weather_row.reorder_child(self._weather_img, 0)
-        self._weather_row.show_all()
+        with main_thread_span("weather icon reload (theme)"):
+            rel = self._last_weather_icon_rel
+            if self._weather_img is not None:
+                try:
+                    self._weather_row.remove(self._weather_img)
+                except Exception:
+                    pass
+                self._weather_img = None
+            self._weather_img = load_weather_icon(rel, WEATHER_ICON_SIZE)
+            if self._weather_img is not None:
+                self._weather_row.pack_start(self._weather_img, False, False, 0)
+                self._weather_row.reorder_child(self._weather_img, 0)
+            self._weather_row.show_all()

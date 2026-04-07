@@ -7,6 +7,8 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from utils.main_thread_debug import main_thread_span
+
 
 @dataclass
 class WiFiLinkState:
@@ -90,9 +92,16 @@ def _device_state(device: str) -> str:
 
 
 def _active_wifi_ap() -> tuple[str | None, int | None]:
-    """SSID and signal (0–100) for the currently associated access point, if any."""
+    """SSID and signal (0–100) for the currently associated access point, if any.
+
+    Uses ``wifi list --rescan no`` so NetworkManager does not kick off a fresh scan
+    (the default ``device wifi`` path can block the UI for many seconds).
+    """
     try:
-        r = _run_nmcli(["-t", "-f", "ACTIVE,SSID,SIGNAL", "device", "wifi"], timeout=12)
+        r = _run_nmcli(
+            ["-t", "-f", "ACTIVE,SSID,SIGNAL", "device", "wifi", "list", "--rescan", "no"],
+            timeout=5,
+        )
     except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
         return None, None
     if r.returncode != 0:
@@ -227,27 +236,28 @@ class WiFiService:
 
     def poll_with_throughput(self) -> tuple[WiFiLinkState, float, float]:
         """Return link state plus receive/transmit throughput (bytes per second)."""
-        st = poll_link_state()
-        phase = f"{st.state}:{st.device or ''}"
-        if self._phase_prev is not None and phase != self._phase_prev:
-            self._t_prev = None
-            self._rx_prev = None
-            self._tx_prev = None
-        self._phase_prev = phase
+        with main_thread_span("wifi poll (nmcli + stats)"):
+            st = poll_link_state()
+            phase = f"{st.state}:{st.device or ''}"
+            if self._phase_prev is not None and phase != self._phase_prev:
+                self._t_prev = None
+                self._rx_prev = None
+                self._tx_prev = None
+            self._phase_prev = phase
 
-        now = time.monotonic()
-        rx_bps = 0.0
-        tx_bps = 0.0
-        if st.state == "connected" and st.device:
-            if self._t_prev is not None and self._rx_prev is not None and self._tx_prev is not None:
-                dt = now - self._t_prev
-                if dt > 0.05:
-                    rx_bps = max(0.0, (st.rx_bytes - self._rx_prev) / dt)
-                    tx_bps = max(0.0, (st.tx_bytes - self._tx_prev) / dt)
-        self._t_prev = now
-        self._rx_prev = st.rx_bytes
-        self._tx_prev = st.tx_bytes
-        return st, rx_bps, tx_bps
+            now = time.monotonic()
+            rx_bps = 0.0
+            tx_bps = 0.0
+            if st.state == "connected" and st.device:
+                if self._t_prev is not None and self._rx_prev is not None and self._tx_prev is not None:
+                    dt = now - self._t_prev
+                    if dt > 0.05:
+                        rx_bps = max(0.0, (st.rx_bytes - self._rx_prev) / dt)
+                        tx_bps = max(0.0, (st.tx_bytes - self._tx_prev) / dt)
+            self._t_prev = now
+            self._rx_prev = st.rx_bytes
+            self._tx_prev = st.tx_bytes
+            return st, rx_bps, tx_bps
 
     def connect(self) -> tuple[bool, str]:
         return wifi_connect()

@@ -19,6 +19,7 @@ from fabric.utils.helpers import invoke_repeater
 from services.mpris_service import mpris_service
 from utils.album_art import load_album_art_pixbuf
 from utils.assets import pause_icon, play_icon, skip_next_icon, skip_prev_icon
+from utils.main_thread_debug import main_thread_span
 
 POLL_MS = 1200
 BTN = 28
@@ -134,7 +135,8 @@ class MediaControlsWidget(Box):
             self._cover.clear()
             self._cover.set_from_icon_name("audio-x-generic", 20)
             return
-        pb = load_album_art_pixbuf(url, ART_W, ART_H)
+        with main_thread_span(f"media album art ({url[:60]}{'…' if url and len(url) > 60 else ''})"):
+            pb = load_album_art_pixbuf(url, ART_W, ART_H)
         self._art_url_loaded = url
         if pb:
             self._cover.set_from_pixbuf(pb)
@@ -221,41 +223,42 @@ class MediaControlsWidget(Box):
         return True
 
     def refresh(self) -> None:
-        if not mpris_service.list_player_names():
-            self.set_visible(False)
-            return
+        with main_thread_span("media refresh (MPRIS + UI)"):
+            if not mpris_service.list_player_names():
+                self.set_visible(False)
+                return
 
-        snap = mpris_service.get_snapshot()
-        if not snap.get("player"):
-            self.set_visible(False)
-            return
+            snap = mpris_service.get_snapshot()
+            if not snap.get("player"):
+                self.set_visible(False)
+                return
 
-        self.set_visible(True)
+            self.set_visible(True)
 
-        status = snap.get("status")
-        title = (snap.get("title") or "").strip()
-        artist = (snap.get("artist") or "").strip()
-        vol = snap.get("volume")
+            status = snap.get("status")
+            title = (snap.get("title") or "").strip()
+            artist = (snap.get("artist") or "").strip()
+            vol = snap.get("volume")
 
-        self._sync_sources_row(mpris_service.get_players_overview(), snap.get("player"))
+            self._sync_sources_row(mpris_service.get_players_overview(), snap.get("player"))
 
-        self.get_style_context().remove_class("media-idle")
-        self._set_cover_from_url(snap.get("art_url"))
+            self.get_style_context().remove_class("media-idle")
+            self._set_cover_from_url(snap.get("art_url"))
 
-        line = title if title else "Unknown title"
-        if artist and title:
-            line = f"{title} · {artist}"
-        elif artist:
-            line = artist
-        self._title.set_label(line)
+            line = title if title else "Unknown title"
+            if artist and title:
+                line = f"{title} · {artist}"
+            elif artist:
+                line = artist
+            self._title.set_label(line)
 
-        tip = snap.get("tooltip") or ""
-        if isinstance(vol, float):
-            tip = f"{tip}\nVolume: {int(round(vol * 100))}%"
-        self.set_tooltip_text(tip)
+            tip = snap.get("tooltip") or ""
+            if isinstance(vol, float):
+                tip = f"{tip}\nVolume: {int(round(vol * 100))}%"
+            self.set_tooltip_text(tip)
 
-        playing = status == "Playing"
-        self._set_play_icon(playing)
+            playing = status == "Playing"
+            self._set_play_icon(playing)
 
     def _set_play_icon(self, playing: bool) -> None:
         if self._last_playing == playing:

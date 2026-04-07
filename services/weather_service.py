@@ -11,6 +11,8 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
+from utils.main_thread_debug import main_thread_span
+
 # WMO-style codes from wttr.in (WorldWeatherOnline). Checked top-down.
 _THUNDER = {200, 386, 389, 392, 395}
 _SNOW = {
@@ -67,36 +69,37 @@ class WeatherService:
         }
 
     def refresh(self) -> None:
-        loc = os.environ.get("DESKTOPUI_WEATHER_LOCATION", "").strip()
-        path = f"/{urllib.parse.quote(loc)}" if loc else "/"
-        url = f"https://wttr.in{path}?format=j1"
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": "desktopUI/1.0 (weather; +https://github.com/chubin/wttr.in)"},
-        )
-        ctx = ssl.create_default_context()
-        try:
-            with urllib.request.urlopen(req, timeout=14, context=ctx) as resp:
-                data = json.loads(resp.read().decode("utf-8", errors="replace"))
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError, OSError):
-            self._ok = False
-            return
+        with main_thread_span("weather refresh (wttr.in)"):
+            loc = os.environ.get("DESKTOPUI_WEATHER_LOCATION", "").strip()
+            path = f"/{urllib.parse.quote(loc)}" if loc else "/"
+            url = f"https://wttr.in{path}?format=j1"
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "desktopUI/1.0 (weather; +https://github.com/chubin/wttr.in)"},
+            )
+            ctx = ssl.create_default_context()
+            try:
+                with urllib.request.urlopen(req, timeout=14, context=ctx) as resp:
+                    data = json.loads(resp.read().decode("utf-8", errors="replace"))
+            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError, OSError):
+                self._ok = False
+                return
 
-        try:
-            cc = data["current_condition"][0]
-            raw_code = cc.get("weatherCode", "0")
-            code = int(raw_code) if str(raw_code).isdigit() else 0
-            t_raw = cc.get("temp_C", "")
-            temp: float | None = None
-            if t_raw is not None and str(t_raw).strip() != "":
-                temp = float(str(t_raw).replace(",", "."))
-        except (KeyError, IndexError, TypeError, ValueError):
-            self._ok = False
-            return
+            try:
+                cc = data["current_condition"][0]
+                raw_code = cc.get("weatherCode", "0")
+                code = int(raw_code) if str(raw_code).isdigit() else 0
+                t_raw = cc.get("temp_C", "")
+                temp: float | None = None
+                if t_raw is not None and str(t_raw).strip() != "":
+                    temp = float(str(t_raw).replace(",", "."))
+            except (KeyError, IndexError, TypeError, ValueError):
+                self._ok = False
+                return
 
-        self._icon_rel = _icon_for_code(code)
-        self._temp_c = temp
-        self._ok = True
+            self._icon_rel = _icon_for_code(code)
+            self._temp_c = temp
+            self._ok = True
 
 
 weather_service = WeatherService()
