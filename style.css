@@ -184,6 +184,9 @@ window {
 .workspace-app-button image {
   padding: 0;
   margin: 0;
+  /* Fixed logical size; pixbufs loaded with FORCE_SIZE in code (18px). */
+  min-width: 18px;
+  min-height: 18px;
 }
 .workspace-app-button label {
   padding: 0;
