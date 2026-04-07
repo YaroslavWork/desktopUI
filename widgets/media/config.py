@@ -76,6 +76,8 @@ class MediaControlsWidget(Box):
         )
         self._cover.set_hexpand(False)
         self._art_url_loaded: str | None = None
+        self._cover.set_no_show_all(True)
+        self._cover.set_visible(False)
 
         self._sources_row = Box(
             orientation="horizontal",
@@ -128,21 +130,26 @@ class MediaControlsWidget(Box):
         self.refresh()
 
     def _set_cover_from_url(self, url: str | None) -> None:
-        if url == self._art_url_loaded:
+        if url:
+            if url == self._art_url_loaded and self._cover.get_visible():
+                return
+        elif self._art_url_loaded is None and not self._cover.get_visible():
             return
+
         if not url:
             self._art_url_loaded = None
             self._cover.clear()
-            self._cover.set_from_icon_name("audio-x-generic", 20)
+            self._cover.set_visible(False)
             return
         with main_thread_span(f"media album art ({url[:60]}{'…' if url and len(url) > 60 else ''})"):
             pb = load_album_art_pixbuf(url, ART_W, ART_H)
         self._art_url_loaded = url
         if pb:
             self._cover.set_from_pixbuf(pb)
+            self._cover.set_visible(True)
         else:
             self._cover.clear()
-            self._cover.set_from_icon_name("audio-x-generic", 20)
+            self._cover.set_visible(False)
 
     def _on_scroll(self, _w, event: Gdk.EventScroll) -> bool:
         if event.direction == Gdk.ScrollDirection.SMOOTH:
