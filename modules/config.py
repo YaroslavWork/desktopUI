@@ -26,6 +26,7 @@ from widgets.settings.config import SettingsBarContent
 from widgets.battery.config import BatteryWidget
 from widgets.media.config import MediaControlsWidget
 from widgets.wifi.config import WiFiWidget
+from widgets.language.config import LanguageWidget
 from utils.assets import settings_icon
 
 
@@ -145,6 +146,7 @@ class UserModuleBar(WaylandWindow):
         self._media_widget = media_widget
         self._wifi_widget = wifi_widget
         self._settings_button = settings_button
+        self._language_widget = LanguageWidget()
 
         # Left bar: user, time, active apps, media
         left_bar = Box(
@@ -164,12 +166,13 @@ class UserModuleBar(WaylandWindow):
             style_classes=["bar-section", "bar-section-center"],
             children=[_bar_pill(workspaces_widget)],
         )
-        # Right bar: Wi-Fi, battery, settings
+        # Right bar: layout, Wi-Fi, battery, settings
         right_bar = Box(
             orientation="horizontal",
             spacing=12,
             style_classes=["bar-section", "bar-section-right"],
             children=[
+                _bar_pill(self._language_widget),
                 _bar_pill(wifi_widget),
                 battery_pill,
                 _bar_pill(settings_button),
