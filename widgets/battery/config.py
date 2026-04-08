@@ -295,10 +295,16 @@ class BatteryWidget(Box):
             self._cancel_anim()
             self._last_eta = None
             self._last_status = None
+            if not self.get_visible():
+                self.show_all()
+            self._label.set_label("—")
+            self._eta_label.hide()
+            self._label.show()
+            self._label.set_opacity(1.0)
+            self._track.set_size_request(BAR_WIDTH, BAR_HEIGHT)
+            self._fill.set_size_request(0, BAR_HEIGHT)
             ctx.remove_class("battery-charging")
             ctx.remove_class("battery-low")
-            if self.get_visible():
-                self.hide()
             self._initialized = True
             return True
 

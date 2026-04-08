@@ -17,6 +17,7 @@ from fabric.widgets.label import Label
 from fabric.utils.helpers import invoke_repeater
 
 from services.mpris_service import mpris_service
+from widgets.bar_app_pill import build_bar_app_pill_button, set_bar_pill_active
 from utils.album_art import load_album_art_pixbuf
 from utils.assets import pause_icon, play_icon, skip_next_icon, skip_prev_icon
 from utils.main_thread_debug import main_thread_span
@@ -81,7 +82,7 @@ class MediaControlsWidget(Box):
 
         self._sources_row = Box(
             orientation="horizontal",
-            spacing=4,
+            spacing=2,
             style_classes=["media-sources-row"],
         )
         self._sources_row.set_hexpand(False)
@@ -189,19 +190,20 @@ class MediaControlsWidget(Box):
             return
 
         row_key = tuple(
-            (str(info["player"]), info.get("status") if isinstance(info.get("status"), str) else None)
+            (
+                str(info["player"]),
+                info.get("status") if isinstance(info.get("status"), str) else None,
+                info.get("desktop_entry"),
+                info.get("identity"),
+            )
             for info in overview
         )
         self._sources_row.set_visible(True)
 
         if row_key == self._sources_row_key and self._sources_row.get_children():
             for i, child in enumerate(self._sources_row.get_children()):
-                ctx = child.get_style_context()
                 dest = overview[i]["player"]
-                if dest == active_dest:
-                    ctx.add_class("active")
-                else:
-                    ctx.remove_class("active")
+                set_bar_pill_active(child, dest == active_dest)
             return
 
         self._sources_row_key = row_key
@@ -210,17 +212,18 @@ class MediaControlsWidget(Box):
 
         for info in overview:
             dest = info["player"]
-            lab = info.get("label_short") or info.get("label") or dest
-            tip = f"{info.get('label', dest)}\n{info.get('status') or '?'}"
-            pill = Button(
-                label=lab,
-                style_classes=["media-source-pill", "flat"],
-                v_align="center",
+            label = str(info.get("label") or dest)
+            de = info.get("desktop_entry") if isinstance(info.get("desktop_entry"), str) else None
+            ident = info.get("identity") if isinstance(info.get("identity"), str) else None
+            icon_cand = ((de or "").strip() or label).strip()
+            letter_src = ((ident or "").strip() or label).strip()
+            tip = f"{label}\n{info.get('status') or '?'}"
+            pill = build_bar_app_pill_button(
+                icon_name_candidate=icon_cand,
+                letter_source=letter_src,
+                tooltip=tip,
             )
-            pill.set_relief(Gtk.ReliefStyle.NONE)
-            pill.set_tooltip_text(tip)
-            if dest == active_dest:
-                pill.get_style_context().add_class("active")
+            set_bar_pill_active(pill, dest == active_dest)
             pill.connect("clicked", self._on_source_picked, dest)
             self._sources_row.add(pill)
         self._sources_row.show_all()

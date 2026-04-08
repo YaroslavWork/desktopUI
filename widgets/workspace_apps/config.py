@@ -8,15 +8,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 gi = __import__("gi")
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib, Gtk
+from gi.repository import Gtk
 
 from fabric.widgets.button import Button
 
 from services.workspace_apps_service import WorkspaceApp
-
-# Themed icon pixel size (Gtk.IconSize.BUTTON is not a fixed physical size).
-_APP_ICON_PX = 18
-_BUTTON_PX = 28
+from widgets.bar_app_pill import build_bar_app_pill_button, set_bar_pill_active
 
 
 def _get_app_display(app: WorkspaceApp) -> tuple[str, str]:
@@ -39,71 +36,19 @@ def _on_app_clicked(_btn: Button, app: WorkspaceApp) -> None:
         pass
 
 
-def _themed_app_icon_image(icon_name: str) -> Gtk.Image | None:
-    if not icon_name:
-        return None
-    try:
-        theme = Gtk.IconTheme.get_default()
-        if not theme.has_icon(icon_name):
-            return None
-        pixbuf = theme.load_icon(
-            icon_name,
-            _APP_ICON_PX,
-            Gtk.IconLookupFlags.FORCE_SIZE,
-        )
-        img = Gtk.Image.new_from_pixbuf(pixbuf)
-        img.set_halign(Gtk.Align.CENTER)
-        img.set_valign(Gtk.Align.CENTER)
-        return img
-    except GLib.Error:
-        return None
-
-
-def _letter_label(text: str) -> Gtk.Label:
-    """Single-line label sized like one glyph so the parent button stays square."""
-    lab = Gtk.Label(label=text)
-    lab.set_xalign(0.5)
-    lab.set_max_width_chars(1)
-    lab.set_width_chars(1)
-    lab.set_line_wrap(False)
-    lab.set_halign(Gtk.Align.CENTER)
-    lab.set_valign(Gtk.Align.CENTER)
-    lab.set_vexpand(False)
-    lab.set_hexpand(False)
-    return lab
-
-
 def build_workspace_app_button(app: WorkspaceApp) -> Button:
     """Round button: themed icon when available, otherwise first letter of class or title."""
-    icon_name, letter = _get_app_display(app)
-    img = _themed_app_icon_image(icon_name)
-    if img is not None:
-        btn = Button(
-            child=img,
-            style_classes=["workspace-app-button", "flat"],
-            size=(_BUTTON_PX, _BUTTON_PX),
-            v_align="center",
-        )
-    else:
-        btn = Button(
-            child=_letter_label(letter),
-            style_classes=["workspace-app-button", "workspace-app-letter", "flat"],
-            size=(_BUTTON_PX, _BUTTON_PX),
-            v_align="center",
-        )
-    btn.set_relief(Gtk.ReliefStyle.NONE)
-    btn.set_hexpand(False)
-    btn.set_vexpand(False)
-    btn.set_size_request(_BUTTON_PX, _BUTTON_PX)
-    btn.set_tooltip_text(app.title or app.app_class)
+    icon_name, _ = _get_app_display(app)
+    letter_source = (app.app_class or app.title or "").strip() or "?"
+    btn = build_bar_app_pill_button(
+        icon_name_candidate=icon_name,
+        letter_source=letter_source,
+        tooltip=app.title or app.app_class or "",
+    )
     btn.connect("clicked", _on_app_clicked, app)
     setattr(btn, "_desktopui_app_address", app.address)
     return btn
 
 
 def set_app_button_active(btn: Button, active: bool) -> None:
-    ctx = btn.get_style_context()
-    if active:
-        ctx.add_class("active")
-    else:
-        ctx.remove_class("active")
+    set_bar_pill_active(btn, active)

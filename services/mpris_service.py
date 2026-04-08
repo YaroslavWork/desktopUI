@@ -263,6 +263,8 @@ class MprisService:
             st_raw = _prop_get(bus, dest, PLAYER_IFACE, "PlaybackStatus")
             st = _normalize_status(st_raw)
             label = _player_display_name(dest)
+            identity = _prop_get(bus, dest, ROOT_IFACE, "Identity")
+            desktop = _prop_get(bus, dest, ROOT_IFACE, "DesktopEntry")
             rows.append(
                 {
                     "player": dest,
@@ -272,6 +274,8 @@ class MprisService:
                     "playing": st == "Playing",
                     "paused": st == "Paused",
                     "is_active": dest == active,
+                    "identity": identity if isinstance(identity, str) else None,
+                    "desktop_entry": desktop if isinstance(desktop, str) else None,
                 }
             )
         return rows

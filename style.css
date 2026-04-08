@@ -65,9 +65,7 @@ window {
 .bar-section .media-control-button:hover,
 .bar-section .media-control-button:active,
 .bar-section .media-control-button:focus,
-.bar-section .media-album-art,
-.bar-section .media-source-pill,
-.bar-section .media-source-pill label {
+.bar-section .media-album-art {
   color: var(--primary);
   border-color: var(--primary);
 }
@@ -227,28 +225,7 @@ window {
   background-image: none;
   border-image: none;
 }
-.media-source-pill {
-  padding: 2px 8px;
-  min-height: 24px;
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: bold;
-  background-color: var(--surface-variant);
-  background-image: none;
-  border-image: none;
-  outline: none;
-  color: var(--on-surface-variant);
-}
-.media-source-pill:hover {
-  background-color: var(--outline-variant);
-}
-.media-source-pill.active {
-  background-color: var(--primary);
-  color: var(--on-primary);
-}
-.media-source-pill.active label {
-  color: var(--on-primary);
-}
+/* MPRIS source row uses .workspace-app-button (see widgets/bar_app_pill.py). */
 .media-album-art {
   min-width: 56px;
   min-height: 38px;
