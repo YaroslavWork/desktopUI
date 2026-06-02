@@ -26,7 +26,26 @@ def list_monitors() -> list[dict[str, Any]]:
     return []
 
 
-def _enable_spec(m: dict[str, Any]) -> str:
+def list_monitors_all() -> list[dict[str, Any]]:
+    """All outputs from ``hyprctl monitors all -j`` (includes disabled; needed to turn eDP-1 off)."""
+    try:
+        r = subprocess.run(
+            ["hyprctl", "monitors", "all", "-j"],
+            capture_output=True,
+            text=True,
+            timeout=3,
+        )
+        if r.returncode != 0 or not r.stdout.strip():
+            return []
+        data = json.loads(r.stdout)
+        if isinstance(data, list):
+            return [m for m in data if isinstance(m, dict)]
+    except (json.JSONDecodeError, subprocess.TimeoutExpired, FileNotFoundError):
+        return []
+    return []
+
+
+def format_monitor_enable_spec(m: dict[str, Any]) -> str:
     name = str(m.get("name", ""))
     w = int(m.get("width", 0))
     h = int(m.get("height", 0))
@@ -41,7 +60,7 @@ def _enable_spec(m: dict[str, Any]) -> str:
 
 
 def set_monitor_enabled(m: dict[str, Any]) -> bool:
-    spec = _enable_spec(m)
+    spec = format_monitor_enable_spec(m)
     try:
         r = subprocess.run(
             ["hyprctl", "keyword", "monitor", spec],
@@ -65,28 +84,30 @@ def set_monitor_disabled(name: str) -> bool:
         return False
 
 
-def apply_single_active(monitors: list[dict[str, Any]], active_name: str) -> tuple[bool, str]:
-    """Enable only `active_name`; disable all other listed monitors."""
-    if not monitors:
+def apply_single_active(active_name: str) -> tuple[bool, str]:
+    """Enable only `active_name`; disable every other output Hyprland knows about."""
+    all_mons = list_monitors_all()
+    if not all_mons:
         return False, "No monitors reported by Hyprland."
-    names = {str(m.get("name", "")) for m in monitors}
+    names = {str(m.get("name", "")).strip() for m in all_mons if m.get("name")}
     if active_name not in names:
         return False, "Unknown display."
-    target = next(m for m in monitors if str(m.get("name", "")) == active_name)
+    target = next(m for m in all_mons if str(m.get("name", "")).strip() == active_name)
     if not set_monitor_enabled(target):
         return False, "Failed to enable selected display."
-    for m in monitors:
-        n = str(m.get("name", ""))
-        if n != active_name:
+    for m in all_mons:
+        n = str(m.get("name", "")).strip()
+        if n and n != active_name:
             set_monitor_disabled(n)
     return True, ""
 
 
-def apply_all_enabled(monitors: list[dict[str, Any]]) -> tuple[bool, str]:
-    """Enable every monitor with its current geometry."""
-    if not monitors:
+def apply_all_enabled() -> tuple[bool, str]:
+    """Enable every output using geometry from ``monitors all``."""
+    all_mons = list_monitors_all()
+    if not all_mons:
         return False, "No monitors."
-    for m in monitors:
+    for m in all_mons:
         if not set_monitor_enabled(m):
             return False, f"Failed to enable {m.get('name', '?')}."
     return True, ""
@@ -96,11 +117,14 @@ class DisplaysService:
     def list_monitors(self) -> list[dict[str, Any]]:
         return list_monitors()
 
-    def apply_single_active(self, monitors: list[dict[str, Any]], active_name: str) -> tuple[bool, str]:
-        return apply_single_active(monitors, active_name)
+    def list_monitors_all(self) -> list[dict[str, Any]]:
+        return list_monitors_all()
 
-    def apply_all_enabled(self, monitors: list[dict[str, Any]]) -> tuple[bool, str]:
-        return apply_all_enabled(monitors)
+    def apply_single_active(self, active_name: str) -> tuple[bool, str]:
+        return apply_single_active(active_name)
+
+    def apply_all_enabled(self) -> tuple[bool, str]:
+        return apply_all_enabled()
 
 
 displays_service = DisplaysService()

@@ -15,6 +15,11 @@ from fabric.widgets.button import Button
 from fabric.widgets.label import Label
 from fabric.widgets.wayland import WaylandWindow
 
+from services.display_layout_prefs import (
+    persist_hypr_monitors_conf_for_prefs,
+    save_all_displays_mode,
+    save_single_display,
+)
 from services.displays_service import displays_service
 
 
@@ -28,8 +33,9 @@ def _monitor_label(m: dict) -> str:
     h = int(m.get("height", 0))
     rr = float(m.get("refreshRate", 0.0))
     focused = m.get("focused")
+    off = " · off" if m.get("disabled") else ""
     star = " · focused" if focused else ""
-    return f"{name} — {w}×{h} @ {rr:.1f} Hz{star}"
+    return f"{name} — {w}×{h} @ {rr:.1f} Hz{star}{off}"
 
 
 class DisplaySettingsContent(Box):
@@ -49,8 +55,8 @@ class DisplaySettingsContent(Box):
         title.set_xalign(0.0)
 
         hint = Label(
-            label="Hyprland: one active output disables the others. Re-connect or run "
-            "hyprctl keyword monitor NAME,preferred,auto,1 if a screen stays off.",
+            label="Outputs are managed here only (not hyprland.conf monitor=). "
+            "Apply saves layout for next session. Re-connect a cable if a screen stays off.",
             style_classes=["display-settings-hint"],
         )
         hint.set_line_wrap(True)
@@ -89,7 +95,7 @@ class DisplaySettingsContent(Box):
         )
 
     def refresh_list(self) -> None:
-        self._monitors = displays_service.list_monitors()
+        self._monitors = displays_service.list_monitors_all() or displays_service.list_monitors()
         for w in self._list_box.get_children():
             self._list_box.remove(w)
         self._radio_all = None
@@ -139,14 +145,20 @@ class DisplaySettingsContent(Box):
         if not self._monitors:
             return
         if self._radio_all and self._radio_all.get_active():
-            ok, msg = displays_service.apply_all_enabled(self._monitors)
-            if not ok and msg:
+            ok, msg = displays_service.apply_all_enabled()
+            if ok:
+                save_all_displays_mode()
+                persist_hypr_monitors_conf_for_prefs({"mode": "all"})
+            elif msg:
                 _btn.set_tooltip_text(msg)
             return
         for name, rb in self._radio_rows:
             if rb.get_active():
-                ok, msg = displays_service.apply_single_active(self._monitors, name)
-                if not ok and msg:
+                ok, msg = displays_service.apply_single_active(name)
+                if ok:
+                    save_single_display(name)
+                    persist_hypr_monitors_conf_for_prefs({"mode": "single", "output": name})
+                elif msg:
                     _btn.set_tooltip_text(msg)
                 return
 

@@ -13,6 +13,8 @@ from services.user_service import user_service  # noqa: F401
 from services.workspaces_service import workspaces_service  # noqa: F401
 from services.theme_service import register_icon_reload, register_stylesheet_reload  # noqa: F401
 
+from gi.repository import GLib
+
 from fabric import Application
 
 from modules.config import (
@@ -65,5 +67,15 @@ if __name__ == "__main__":
     register_icon_reload(user_widget.refresh_tinted_icons)
     register_icon_reload(settings_widget.refresh_tinted_icons)
     register_icon_reload(wifi_widget.refresh_tinted_icons)
+
+    def _apply_saved_display_layout(_data=None) -> bool:
+        from services.display_layout_prefs import apply_saved_layout_at_startup
+        from services.hypr_display_state import ensure_desktopui_displays_conf_stub
+
+        ensure_desktopui_displays_conf_stub()
+        apply_saved_layout_at_startup()
+        return False
+
+    GLib.idle_add(_apply_saved_display_layout)
 
     app.run()
