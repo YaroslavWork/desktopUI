@@ -84,6 +84,30 @@ def set_monitor_disabled(name: str) -> bool:
         return False
 
 
+def primary_output_name() -> str | None:
+    """
+    Hyprland "primary" output: focused enabled head, else first enabled, else first listed connector.
+    """
+    all_mons = list_monitors_all()
+    names = {str(m.get("name", "")).strip() for m in all_mons if m.get("name")}
+    if not names:
+        return None
+    active = list_monitors()
+    for m in active:
+        n = str(m.get("name", "")).strip()
+        if n in names and m.get("focused"):
+            return n
+    for m in active:
+        n = str(m.get("name", "")).strip()
+        if n in names:
+            return n
+    for m in all_mons:
+        n = str(m.get("name", "")).strip()
+        if n in names:
+            return n
+    return None
+
+
 def apply_single_active(active_name: str) -> tuple[bool, str]:
     """Enable only `active_name`; disable every other output Hyprland knows about."""
     all_mons = list_monitors_all()
@@ -119,6 +143,9 @@ class DisplaysService:
 
     def list_monitors_all(self) -> list[dict[str, Any]]:
         return list_monitors_all()
+
+    def primary_output_name(self) -> str | None:
+        return primary_output_name()
 
     def apply_single_active(self, active_name: str) -> tuple[bool, str]:
         return apply_single_active(active_name)

@@ -1,29 +1,39 @@
 :root {
-  /* Generated from matugen (desktopUI wallpaper action) */
-  --background: #121318;
-  --on-background: #e3e2e9;
-  --surface: #121318;
-  --on-surface: #e3e2e9;
-  --surface-variant: #45464f;
-  --on-surface-variant: #c5c6d0;
-  --primary: #b3c5ff;
-  --on-primary: #192e60;
-  --primary-container: #314578;
-  --on-primary-container: #dbe1ff;
-  --secondary: #c1c6dd;
-  --on-secondary: #2a3042;
-  --secondary-container: #414659;
-  --on-secondary-container: #dde2f9;
-  --tertiary: #e1bbdc;
-  --on-tertiary: #422741;
-  --tertiary-container: #5a3d58;
-  --on-tertiary-container: #ffd6f9;
+  /* Main UI Surface and Background */
+  --background: #171216;
+  --on-background: #ebdfe6;
+  --surface: #171216;
+  --on-surface: #ebdfe6;
+  --surface-variant: #4d444c;
+  --on-surface-variant: #d0c3cc;
+
+  /* Primary (Main Accents) */
+  --primary: #ecb4ec;
+  --on-primary: #49204d;
+  --primary-container: #623765;
+  --on-primary-container: #ffd6fc;
+
+  /* Secondary (Less Prominent Accents) */
+  --secondary: #d8bfd4;
+  --on-secondary: #3b2b3b;
+  --secondary-container: #534152;
+  --on-secondary-container: #f5dbf1;
+
+  /* Tertiary (Contrasting Accents) */
+  --tertiary: #f6b8ac;
+  --on-tertiary: #4c251e;
+  --tertiary-container: #673b33;
+  --on-tertiary-container: #ffdad4;
+
+  /* Error States */
   --error: #ffb4ab;
   --on-error: #690005;
   --error-container: #93000a;
   --on-error-container: #ffdad6;
-  --outline: #8f909a;
-  --outline-variant: #45464f;
+
+  /* Utilities */
+  --outline: #998d96;
+  --outline-variant: #4d444c;
   --shadow: #000000;
   --scrim: #000000;
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Main entry point: runs all widgets and services together."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -47,8 +48,12 @@ if __name__ == "__main__":
     app._settings_popup = settings_popup
     app._display_settings_popup = display_settings_popup
 
-    def _open_display_settings() -> None:
+    def _hide_all_pop_up() -> None:
+        user_popup.hide()
         settings_popup.hide()
+
+    def _open_display_settings() -> None:
+        _hide_all_pop_up()
         display_settings_popup.open_centered()
 
     set_display_settings_opener(_open_display_settings)
@@ -77,5 +82,19 @@ if __name__ == "__main__":
         return False
 
     GLib.idle_add(_apply_saved_display_layout)
+
+    if os.environ.get("DESKTOPUI_REGISTER_PRIMARY_MOUSE_BIND", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    ):
+
+        def _register_primary_mouse_bind(_data=None) -> bool:
+            from services.primary_mouse_display_service import register_hypr_bind_for_primary_display
+
+            register_hypr_bind_for_primary_display()
+            return False
+
+        GLib.idle_add(_register_primary_mouse_bind)
 
     app.run()

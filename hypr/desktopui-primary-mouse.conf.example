@@ -1,0 +1,8 @@
+# Middle mouse (wheel click) → desktopUI: single primary display only.
+#
+# 1. Copy to your Hyprland config dir or merge into hyprland.conf:
+#      source = /ABS/PATH/TO/desktopUI/hypr/desktopui-primary-mouse.conf
+# 2. Fix the path below (must be absolute, no spaces before commas).
+# 3. If nothing happens, run `wev` and press the wheel; try mouse:273 instead of 274.
+
+# bind = , mouse:274, exec, /home/USER/Programs/desktopUI/bin/desktopui-primary-display
