@@ -192,6 +192,18 @@ class SettingsBarContent(Box):
         self._displays_box.show_all()
 
     def _on_toggle_display(self, name: str, is_active: bool) -> None:
+        if is_active:
+            active_mons = displays_service.list_monitors()
+            if len(active_mons) <= 1:
+                _run([
+                    "notify-send",
+                    "-u", "critical",
+                    "-a", "desktopUI",
+                    "Display Manager",
+                    "Cannot disable the last active monitor!"
+                ])
+                return
+
         displays_service.toggle_monitor(name, not is_active)
         self.refresh_displays()
         # Schedule a delayed refresh to guarantee state is settled in hyprctl
