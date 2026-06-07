@@ -548,3 +548,61 @@ window {
   background-image: none;
   border-image: none;
 }
+
+/* Displays Control Section in Settings Popup */
+.settings-displays-header {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--secondary);
+  padding: 10px 12px 6px 12px;
+  border-top: 1px solid var(--outline-variant);
+  margin-top: 8px;
+}
+
+.settings-displays-container {
+  padding: 4px 12px;
+}
+
+.display-row {
+  margin: 4px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: var(--surface);
+  border: 1px solid var(--outline-variant);
+}
+
+.display-row-active {
+  border-color: var(--primary);
+  background-color: var(--surface-variant);
+}
+
+.display-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+.display-toggle-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: var(--on-primary);
+  background-color: var(--primary);
+  border: none;
+}
+
+.display-toggle-btn:hover {
+  opacity: 0.95;
+}
+
+.display-toggle-btn.inactive {
+  color: var(--on-surface-variant);
+  background-color: var(--surface-variant);
+  border: 1px solid var(--outline);
+}
+
+.display-toggle-btn.inactive:hover {
+  background-color: var(--outline-variant);
+}
+

@@ -10,7 +10,7 @@ import threading
 import subprocess
 from typing import Any
 from pathlib import Path
-from gi.repository import GLib
+from gi.repository import GLib, GObject
 
 # Ensure project root is in path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +27,7 @@ class DisplaysService(SingletonService):
     """
 
     __gsignals__ = {
-        "monitors-changed": (GLib.SignalFlags.RUN_FIRST, None, ()),
+        "monitors-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
     }
 
     def __init__(self, **kwargs):
@@ -142,26 +142,24 @@ class DisplaysService(SingletonService):
                 capture_output=True,
                 timeout=3,
             )
-            return r.returncode == 0
+            success = r.returncode == 0
+            if success:
+                GLib.idle_add(self._notify_monitors_changed)
+            return success
         except Exception:
             return False
 
     def toggle_monitor(self, name: str, enable: bool) -> bool:
         """Enable or disable a monitor output by name."""
         if enable:
+            scale_str = "1"
             all_mons = self.list_monitors_all()
-            spec = "preferred,auto,1"
             for m in all_mons:
                 if m.get("name") == name:
-                    w = m.get("width", 1920)
-                    h = m.get("height", 1080)
-                    rr = m.get("refreshRate", 60)
-                    x = m.get("x", 0)
-                    y = m.get("y", 0)
-                    scale = m.get("scale", 1.0)
-                    spec = f"{w}x{h}@{rr},{x}x{y},{scale}"
+                    s = m.get("scale", 1.0)
+                    scale_str = f"{s:g}"
                     break
-            return self.set_monitor_rule(name, spec)
+            return self.set_monitor_rule(name, f"preferred,auto,{scale_str}")
         else:
             return self.set_monitor_rule(name, "disable")
 
