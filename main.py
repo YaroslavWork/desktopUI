@@ -26,8 +26,6 @@ from modules.config import (
     user_widget,
     wifi_widget,
 )
-from widgets.display_settings.config import DisplaySettingsPopup
-from widgets.settings.config import set_display_settings_opener
 from utils.css_compile import compile_desktop_ui_stylesheet
 
 
@@ -37,26 +35,18 @@ if __name__ == "__main__":
     user_popup.hide()
     settings_popup = SettingsPopup()
     settings_popup.hide()
-    display_settings_popup = DisplaySettingsPopup()
-    display_settings_popup.hide()
 
     app = Application("desktop-ui", bar)
     app.add_window(user_popup)
     app.add_window(settings_popup)
-    app.add_window(display_settings_popup)
     app._user_popup = user_popup
     app._settings_popup = settings_popup
-    app._display_settings_popup = display_settings_popup
+
 
     def _hide_all_pop_up() -> None:
         user_popup.hide()
         settings_popup.hide()
 
-    def _open_display_settings() -> None:
-        _hide_all_pop_up()
-        display_settings_popup.open_centered()
-
-    set_display_settings_opener(_open_display_settings)
 
     compiled = compile_desktop_ui_stylesheet(PROJECT_ROOT)
     app.set_stylesheet_from_string(compiled, compile=False)
@@ -73,28 +63,5 @@ if __name__ == "__main__":
     register_icon_reload(settings_widget.refresh_tinted_icons)
     register_icon_reload(wifi_widget.refresh_tinted_icons)
 
-    def _apply_saved_display_layout(_data=None) -> bool:
-        from services.display_layout_prefs import apply_saved_layout_at_startup
-        from services.hypr_display_state import ensure_desktopui_displays_conf_stub
-
-        ensure_desktopui_displays_conf_stub()
-        apply_saved_layout_at_startup()
-        return False
-
-    GLib.idle_add(_apply_saved_display_layout)
-
-    if os.environ.get("DESKTOPUI_REGISTER_PRIMARY_MOUSE_BIND", "").strip().lower() in (
-        "1",
-        "true",
-        "yes",
-    ):
-
-        def _register_primary_mouse_bind(_data=None) -> bool:
-            from services.primary_mouse_display_service import register_hypr_bind_for_primary_display
-
-            register_hypr_bind_for_primary_display()
-            return False
-
-        GLib.idle_add(_register_primary_mouse_bind)
 
     app.run()

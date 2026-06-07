@@ -14,10 +14,9 @@ A premium, modular top status bar and interactive widget popup control center de
   - **Right Section**: Keyboard Language Layout selector, interactive Wi-Fi Monitor, Battery Status Pill, and Settings Button.
 - **Interactive Control Center Popups**:
   - **User Popup**: Premium user profile drawer.
-  - **Settings Popup**: Quick-toggle panel integrating display layouts, wallpapers, weather info, and system actions.
-  - **Display Settings Panel**: Easily manage monitors and screen layouts.
+  - **Settings Popup**: Quick-toggle panel integrating wallpapers, weather info, and system actions.
 - **Dynamic SCSS/CSS Styling**: Live stylesheet reloading and automated compiling using Sass/CSS utilities.
-- **Singleton Services Architecture**: Decoupled, thread-safe backends (WiFi, MPRIS, Workspace Apps, Weather, Wallpapers) built on a `SingletonService` pattern to optimize resource consumption.
+- **Singleton Services Architecture**: Decoupled, thread-safe backends (WiFi, MPRIS, Workspace Apps, Weather, Wallpapers, and event-driven Hyprland Displays) built on a `SingletonService` pattern to optimize resource consumption and listen to dynamic event streams.
 
 ---
 
@@ -54,8 +53,6 @@ pip install -r requirements.txt
 
 | Environment Variable | Description | Default |
 |----------------------|-------------|---------|
-| `DESKTOPUI_REGISTER_PRIMARY_MOUSE_BIND` | Set to `1`, `true`, or `yes` to register a Hyprland keybind for the primary display mouse action. | Disabled |
-| `DESKTOPUI_PRIMARY_MOUSE_CODE` | Code for the primary mouse button. | `274` |
 | `DESKTOPUI_TERMINAL` / `TERMINAL` | Terminal emulator executable used when launching interactive Wi-Fi controls. | Auto-detected |
 | `DESKTOPUI_WEATHER_LOCATION` | Custom location string for the weather widget service. | Auto-detected |
 | `DESKTOPUI_SKIP_MATUGEN` | Set to any non-empty value to skip generating themes via Matugen. | Disabled |
@@ -78,7 +75,7 @@ desktopUI/
 ├── modules/
 │   └── config.py        # Bar layout configuration, size limits, and Window classes
 ├── widgets/             # Individual GTK widgets (Time, Battery, WiFi, Media, Workspaces...)
-├── services/            # Background services handling DBus, Hyprland states, and API calls
+├── services/            # Background services handling DBus, Hyprland states/displays, and API calls
 └── utils/               # SCSS compilation engines, asset fetchers, and debugging utilities
 ```
 
@@ -96,10 +93,10 @@ source .venv/bin/activate
 ./main.py
 ```
 
-To run in debug mode or enable mouse-binding features, prefix your execution:
+To run in debug mode, prefix your execution:
 
 ```bash
-DESKTOPUI_REGISTER_PRIMARY_MOUSE_BIND=true python3 main.py
+DESKTOPUI_DEBUG_BLOCKING=true python3 main.py
 ```
 
 ---
