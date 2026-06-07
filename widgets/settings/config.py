@@ -181,6 +181,8 @@ class SettingsBarContent(Box):
             )
             toggle_btn.set_relief(Gtk.ReliefStyle.NONE)
             toggle_btn.connect("clicked", lambda _, n=name, a=is_active: self._on_toggle_display(n, a))
+            toggle_btn.connect("enter-notify-event", lambda w, ev, a=is_active: (w.set_label("Disable" if a else "Enable"), False)[1])
+            toggle_btn.connect("leave-notify-event", lambda w, ev, a=is_active: (w.set_label("Enabled" if a else "Disabled"), False)[1])
 
             row.pack_start(info_lbl, True, True, 0)
             row.pack_end(toggle_btn, False, False, 0)
